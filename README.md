@@ -24,7 +24,7 @@ Emir Turkes can be contacted at emir.turkes@eturkes.com
 Characterisation of fractionated extracellular vesicles in Alzheimer's Disease.  
 Other than the raw data, this repo contains everything needed to reproduce results in the associated paper that were analysed using R.
 
-Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
+Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.  
 These may have to be recreated on non-Unix OS such as Windows.
 
 To obtain the raw data and pre-computed results, please download this Google Drive folder:  
@@ -37,7 +37,7 @@ A user can alternatively simply use the default R version on their system and ma
 
 ### 1. Docker
 
-Docker is virtualisation software that allows the distribution of reproducible operating system environments, including userland software like R packages.
+Docker is virtualisation software that allows the distribution of reproducible operating system environments, including userland software like R packages.  
 See here to install and set up Docker [https://www.docker.com/](https://www.docker.com/).  
 Once installed, the simplest option is to run `run_all.R` using the command below:
 

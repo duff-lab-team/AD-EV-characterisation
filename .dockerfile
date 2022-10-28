@@ -8,3 +8,7 @@ docker-compose.yml
 .env
 .gitignore
 README.md
+AD-EV-characterisation.Rproj
+.Rproj.user
+tmp
+R

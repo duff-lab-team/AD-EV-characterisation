@@ -7,6 +7,9 @@
 # Log files
 nohup.out
 
+# Temporary data and caches
+/tmp/
+
 # History files
 .Rhistory
 .Rapp.history

@@ -1,0 +1,10 @@
+data
+.git
+results
+storage
+apptainer.sh
+COPYING
+docker-compose.yml
+.env
+.gitignore
+README.md

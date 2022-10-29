@@ -22,7 +22,7 @@
 # Shell script for building an Apptainer image from Docker Hub and running it
 # See README of this project for further details
 
-singularity pull ad-ev-characterisation.simg docker://dufflab/ad-ev-characterisation:R4.2.1v1
+singularity pull ad-ev-characterisation.simg docker://dufflab/ad-ev-characterisation:R4.2.1v2
 
 if [ "$1" = "all" ]; then
     singularity exec \

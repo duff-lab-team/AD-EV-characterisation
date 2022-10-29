@@ -23,45 +23,21 @@ LABEL org.opencontainers.image.authors="Emir Turkes emir.turkes@eturkes.com"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        pkg-config \
+        libxml2 \
         zlib1g-dev \
-        libpng-dev \
-        libnetcdf-dev \
-        libxml2-dev \
-        libproj-dev \
-        libcairo2-dev \
-        libxt-dev \
-        libgsl23 \
-        libgdal26 \
-    && Rscript -e "install.packages('conflicted')" \
-        -e "install.packages('rmarkdown')" \
-        -e "install.packages('rprojroot')" \
-        -e "install.packages('DT')" \
-        -e "install.packages('data.table')" \
-        -e "install.packages('readxl')" \
-        -e "install.packages('pheatmap')" \
-        -e "install.packages('plyr')" \
-        -e "install.packages('UpSetR')" \
-        -e "install.packages('dplyr')" \
-        -e "install.packages('hexbin')" \
-        -e "install.packages('openxlsx')" \
-        -e "install.packages('ggbeeswarm')" \
+        libnetcdf15 \
+    && Rscript -e "install.packages('rmarkdown')" \
+        -e "install.packages('markdown')" \
+        -e "install.packages('conflicted')" \
         -e "install.packages('khroma')" \
         -e "install.packages('svglite')" \
         -e "install.packages('fastmatch')" \
-        -e "install.packages('volcano3D')" \
-        -e "install.packages('VennDiagram')" \
-        -e "install.packages('mice')" \
         -e "install.packages('BiocManager')" \
-        -e "install.packages('remotes')" \
+        -e "BiocManager::install('ComplexHeatmap')" \
         -e "BiocManager::install('DEP')" \
+        -e "BiocManager::install('GSEABase')" \
         -e "BiocManager::install('GSVA')" \
-        -e "BiocManager::install('variancePartition')" \
         -e "BiocManager::install('biomaRt')" \
-        -e "BiocManager::install('EnhancedVolcano')" \
-        -e "BiocManager::install('preprocessCore', configure.args = '--disable-threading', force = TRUE)" \
-        -e "BiocManager::install('NormalyzerDE')" \
-        -e "remotes::install_github('lgatto/pRolocdata')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \

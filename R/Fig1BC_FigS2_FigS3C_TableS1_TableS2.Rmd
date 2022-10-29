@@ -65,10 +65,6 @@ This section covers necessary but non-directly relevant code for generating the 
 
 # Load required packages, suppressing startup messages.
 # -----------------------------------------------------
-# packages <- c(
-#   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT", "ComplexHeatmap",
-#   "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "khroma", "biomaRt"
-# )
 packages <- c(
   "conflicted", "ComplexHeatmap", "DEP", "khroma", "ggplot2", "SummarizedExperiment", "magrittr", "tibble", "dplyr",
   "scales", "limma", "DT", "GSEABase", "GSVA", "biomaRt", "circlize"

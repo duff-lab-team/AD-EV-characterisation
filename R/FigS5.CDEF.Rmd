@@ -36,13 +36,13 @@ div.main-container {max-width: none; width: 100%;}
 
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
 The toggle at the start of the document controls the visibility of all chunks.
-Note that the chunk options `results = "hide"` and `fig.show = "hide"` are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
+Note that several chunk options are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
 
 # Prep
 
 This section covers necessary but non-directly relevant code for generating the main sections.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 #    This file is part of AD-EV-characterisation.
 #    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
 #    University Medical Center
@@ -134,7 +134,7 @@ data <- data[min(non_zero):max(non_zero), ]
 Smoothed histogram showing for each fraction the relative proportion of EVs at each size.
 Error bars represent at each size the standard deviation in EV proportion among fractions.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Create a dataset where replicates of each fraction are aggregated together by their mean.
 # -----------------------------------------------------------------------------------------
 names <- unique(sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])))
@@ -216,7 +216,7 @@ A scaling factor based on the amount of tissue used for each donor is applied to
 This scaling factor is also used to put concentrations on the scale of billion particles per mg brain tissue, aiding interpretation by shifting values to a range between 0 and 1.5.
 Error bars represent standard error of the mean for number of EVs among donors of each fraction.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Create scaling factor based on tissue amount used.
 # --------------------------------------------------
 scaling_factor <- data.frame(amount = c(1.25, 1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
@@ -275,7 +275,7 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
 This figure features binning of particle sizes and bar plots of the percentage of particles from the total per fraction in each of the bins.
 Error bars represent at each fraction and bin the standard deviation in EV percentage among donors.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Convert concentration values into percentage values.
 # ----------------------------------------------------
 donor_fraction_data_percentage <- donor_fraction_data
@@ -355,7 +355,7 @@ Box and whisker plots comparing the mode of each fraction.
 Among the donors, centre lines indicate the median of modes, lower and upper hinges represent the first and third quartiles, and whiskers extend from the hinges to a maximum of 1.5X the interquartile range.
 Because proper calculation of the mode uses counts of particles at particular sizes, we read in the original data again, instead using the count data rather than concentration.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
 file_list <- list.files(file.path(data_dir, "zetaview"))

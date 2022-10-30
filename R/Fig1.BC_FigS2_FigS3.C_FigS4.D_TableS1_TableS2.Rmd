@@ -37,13 +37,13 @@ div.main-container {max-width: none; width: 100%;}
 
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
 The toggle at the start of the document controls the visibility of all chunks.
-Note that the chunk options `results = "hide"` and `fig.show = "hide"` are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
+Note that several chunk options are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
 
 # Prep
 
 This section covers necessary but non-directly relevant code for generating the main sections.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 #    This file is part of AD-EV-characterisation.
 #    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
 #    University Medical Center
@@ -208,9 +208,9 @@ colnames(data) <- data$ID # Some DEP functions are incompatible with the format 
 # Figure S3 C
 
 Missing value proportion to log2 intensity chart, with line drawn at the MNAR cutoff point.
-Only fraction 1 is shown here as a representative example, but the others can be trivially produced by removing `results = "hide"` and `fig.show = "hide"` in their code chunk when re-running this R Markdown.
+Only fraction 1 is shown here as a representative example, but the others can be trivially produced by removing chunk options that are suppressing output when re-running this R Markdown.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Replace proteins missing entirely in a condition with minimum value per condition in random samples.
 # Cache the object as operation can be lengthy.
 # ----------------------------------------------------------------------------------------------------
@@ -291,10 +291,10 @@ F1_MNAR_cutoff <- 14.9
 plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
 ```
 
-```{r, results = "hide", fig.show = "hide"}
-# For brevity these plots are hidden with the chunk parameters `results = "hide"` and `fig.show = "hide"` and can be
-# viewed by removing the parameter when re-running the R Markdown.
-# ------------------------------------------------------------------------------------------------------------------
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# For brevity these plots are hidden with chunk options and can be viewed by removing those options when re-running the
+# R Markdown.
+# ---------------------------------------------------------------------------------------------------------------------
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.2")])
 plot_data <- ggplot_build(plot)
 F2_MNAR_cutoff <- 14.7
@@ -329,10 +329,10 @@ plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
 plot_data <- ggplot_build(plot)
 F8_MNAR_cutoff <- 15.2
 plot + geom_vline(xintercept = F8_MNAR_cutoff) + ggtitle("Fraction 8")
-# ------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 ```
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Order each condition by row means and select the last protein to be included as MNAR.
 # We choose row means over medians because high expression outliers may be decent indication a protein is not MNAR.
 # -----------------------------------------------------------------------------------------------------------------
@@ -793,7 +793,7 @@ Statistics shown are described in the limma documentation:
 
 > This function writes a delimited text file containing for each gene (1) the average log2-intensity (AveExpr), (2) the coefficients or contrasts (log2-fold-changes, Coef), (3) moderated t-statistics, (4) t-statistic P-values, (5) F-statistic if available, (6) F-statistic P-values if available, (7) decideTests results if available and (8) gene names and annotation.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Apply limma for all pairwise comparisons as described.
 # ------------------------------------------------------
 limma_design <- model.matrix(~ 0 + experimental_design$groups)
@@ -873,7 +873,7 @@ Furthermore, tools such as limma are generally used with unscaled data.
 We use limma for significance testing, using default parameters as suggested by GSVA developers and as in the DEP analysis, except again using the "global" method for multiple testing correction.
 This time we also set the adjusted p-value cutoff to $5^{-4}$ (0.0005), chosen to select no more than about 500 gene sets total after combining gene sets uniquely enriched in F1_3, F4_6 or F7_8.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # Filter GO terms for redundancy to improve interpretation and reduce multiple testing burden.
 # Cache the object as operation can be lengthy.
 # GO terms were downloaded from g:Profiler (https://biit.cs.ut.ee/gprofiler/gost) and a set combining BP, MF, and CC
@@ -1252,7 +1252,7 @@ This figure is a Venn diagram comparing DEPs in the imputed, unimputed, and comp
 All limma parameters are set the same as the prior DEP analysis.
 The DEPs compared for each pipeline are those with an adjusted F p-value of less than 0.05.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # The same limma design is used for all pipelines.
 # ------------------------------------------------
 limma_design <- model.matrix(~ 0 + experimental_design$groups)

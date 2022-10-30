@@ -21,13 +21,13 @@ version: "3"
 
 services:
   all:
-    image: dufflab/ad-ev-characterisation:R4.2.1v3
+    image: dufflab/ad-ev-characterisation:R4.2.1v4
     volumes:
       - ".:/home/rstudio/AD-EV-characterisation:rw"
     command: Rscript -e "source('/home/rstudio/AD-EV-characterisation/R/run_all.R')"
 
   rstudio:
-    image: dufflab/ad-ev-characterisation:R4.2.1v3
+    image: dufflab/ad-ev-characterisation:R4.2.1v4
     volumes:
       - ".:/home/rstudio/AD-EV-characterisation:rw"
     ports:

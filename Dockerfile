@@ -34,6 +34,7 @@ RUN apt-get update \
         -e "install.packages('fastmatch')" \
         -e "install.packages('reshape2')" \
         -e "install.packages('ggbeeswarm')" \
+        -e "install.packages('VennDiagram')" \
         -e "install.packages('BiocManager')" \
         -e "BiocManager::install('ComplexHeatmap')" \
         -e "BiocManager::install('DEP')" \

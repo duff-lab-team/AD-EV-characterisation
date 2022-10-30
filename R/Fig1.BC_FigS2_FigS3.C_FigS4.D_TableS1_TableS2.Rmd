@@ -1,5 +1,5 @@
 ---
-title: "Figure 1 BC, Figure S2, Figure S3 C, Table S1, Table S2"
+title: "Figure 1 BC, Figure S2, Figure S3 C, Figure S4 D, Table S1, Table S2"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
@@ -17,7 +17,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "Fig1.BC_FigS2_FigS3.C_TableS1_TableS2.html"
+    "..", "results", "Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.html"
   ))})
 ---
 
@@ -67,7 +67,7 @@ This section covers necessary but non-directly relevant code for generating the 
 # -----------------------------------------------------
 packages <- c(
   "conflicted", "ComplexHeatmap", "DEP", "khroma", "ggplot2", "SummarizedExperiment", "magrittr", "tibble", "dplyr",
-  "scales", "limma", "DT", "GSEABase", "GSVA", "biomaRt", "circlize"
+  "scales", "limma", "DT", "GSEABase", "GSVA", "biomaRt", "circlize", "VennDiagram", "RColorBrewer"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------
@@ -182,6 +182,9 @@ names(colour) <- unique(sub("\\.", replacement = " ", x = experimental_design$co
 # --------------------------------------
 
 data <- make_se(data, columns = LFQ_columns, expdesign = experimental_design)
+
+unimputed_data <- data # For comparison later, keep an object that won't go through the imputation process.
+complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 ```
 
 # Figure S2 A
@@ -688,7 +691,12 @@ data <- data[rownames(data) %in% keep, ]
 data <- data[sort(rownames(data)), ]
 # -----------------------------------------------
 
-data <- normalize_vsn(data) # Normalise using VSN.
+# Normalise all data using VSN.
+# -----------------------------
+data <- normalize_vsn(data)
+unimputed_data <- normalize_vsn(unimputed_data)
+complete_cases <- normalize_vsn(complete_cases)
+# -----------------------------
 
 # The main imputation code.
 # -------------------------
@@ -1236,6 +1244,62 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
+
+# Figure S4 D
+
+This figure is a Venn diagram comparing DEPs in the imputed, unimputed, and complete cases pipelines.
+All limma parameters are set the same as the prior DEP analysis.
+The DEPs compared for each pipeline are those with an adjusted F p-value of less than 0.05.
+
+```{r, results = "hide", fig.show = "hide"}
+# The same limma design is used for all pipelines.
+# ------------------------------------------------
+limma_design <- model.matrix(~ 0 + experimental_design$groups)
+colnames(limma_design) <- unique(experimental_design$groups)
+contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
+# ------------------------------------------------
+
+# Loop through pipeline data, finding DEPs using limma for each one.
+# ------------------------------------------------------------------
+data_list <- list(data, unimputed_data, complete_cases)
+venn_list <- vector("list", length = length(data_list))
+names(venn_list) <- c("Imputed", "Unimputed", "Complete cases")
+for (i in seq_along(data_list)) {
+
+  # The main limma code.
+  # --------------------
+  fit <- lmFit(assay(data_list[[i]]), design = limma_design)
+  cont_fit <- eBayes(contrasts.fit(fit, contrasts = contrast_mat))
+  tests <- decideTests(cont_fit, method = "global")
+  # --------------------
+
+  # The full stats table can only be obtained by writing it out as a TSV then reading it back in.
+  # ---------------------------------------------------------------------------------------------
+  write.fit(
+    cont_fit, results = tests, file = file.path(cache_dir, "results.tsv"),
+    adjust = "BH", method = "global", F.adjust = "BH"
+  )
+  results <- read.delim(file.path(cache_dir, "results.tsv"))
+  # ---------------------------------------------------------------------------------------------
+
+  # Add proteins with adjusted F p-values of less than 0.05 to the Venn diagram list.
+  # ---------------------------------------------------------------------------------
+  venn_list[[i]] <- results[results$F.p.value.adj < 0.05, ]$X
+  # ---------------------------------------------------------------------------------
+}
+# ------------------------------------------------------------------
+
+venn_list <- lapply(venn_list, FUN = function(x) x[!is.na(x)]) # Unimputed data produces NAs, which must be removed.
+
+plot <- venn.diagram(
+  venn_list, filename = NULL, disable.logging = TRUE,
+  category.names = names(venn_list), fill = brewer.pal(3, name = "Pastel2")
+)
+```
+
+```{r}
+grid.draw(plot)
 ```
 
 # References

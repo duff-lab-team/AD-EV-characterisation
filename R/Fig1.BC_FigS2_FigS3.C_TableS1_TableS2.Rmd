@@ -776,7 +776,7 @@ ggplot(df, aes(PC1, PC2, color = Fraction)) +
 # ----------------------------------------------------------------------------------------------------------------
 ```
 
-# Supplementary Table 1 {.tabset}
+# Table S1 {.tabset}
 
 Tabs containing tables of differentially expressed proteins (DEPs) for each fraction group (F1_3, F4_6, and F7_8) compared to all other fraction groups.
 limma was used with default parameters except for multiple testing correction adjustment for all pairwise comparisons using the "global" method.
@@ -857,7 +857,7 @@ datatable_download(F4_6) # Custom version of `DT::datatable`, see top of file un
 datatable_download(F7_8) # Custom version of `DT::datatable`, see top of file under "Define functions" comment.
 ```
 
-# Supplementary Table 2 {.tabset}
+# Table S2 {.tabset}
 
 Tables containing the same comparisons as Supplementary Table 1 but for gene set enrichment (GSE) of Gene Ontology (GO) terms using the ssGSEA algorithm from GSVA combined with limma.
 ssGSEA was shown to have similar performance to the default GSVA method, but we find it more versatile for having an option to turn off min-max scaling, allowing one to compare GSE across gene sets and not just samples.

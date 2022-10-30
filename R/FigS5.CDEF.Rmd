@@ -1,0 +1,459 @@
+---
+title: "Figure S5 CDEF"
+author:
+  - name: "Emir Turkes and Stephanie Fowler"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+link-citations: true
+output:
+  html_document:
+    code_folding: show
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path("..", "results", "FigS5.CDEF.html"))
+  })
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
+*The purpose of this file is to reproduce results from the associated paper, specifically sections C, D, E, and F of Supplementary Figure 5.*
+
+To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
+The toggle at the start of the document controls the visibility of all chunks.
+Note that the chunk options `results = "hide"` and `fig.show = "hide"` are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
+
+# Prep
+
+This section covers necessary but non-directly relevant code for generating the main sections.
+
+```{r, results = "hide", fig.show = "hide"}
+#    This file is part of AD-EV-characterisation.
+#    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
+#    University Medical Center
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+# Load required packages, suppressing startup messages.
+# -----------------------------------------------------
+packages <- c("conflicted", "khroma", "reshape2", "plyr", "ggplot2", "ggbeeswarm")
+invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
+# -----------------------------------------------------
+
+# Define global settings.
+# -----------------------
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
+# -----------------------
+
+# Commonly used paths.
+# --------------------
+data_dir <- file.path("..", "data")
+# --------------------
+
+# Create colour palette for plots later.
+# --------------------------------------
+colour <- colour("vibrant")(7)
+colour <- append("#DDAA33", colour) # Maximum size of chosen palette is 7 but we need 8, so add one that fits in.
+colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)] # Specify an order that provides better contrast.
+# --------------------------------------
+
+# The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
+# ------------------------------------------------------------------------------------------------------------
+file_list <- list.files(file.path(data_dir, "zetaview"))
+file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+for (i in seq_along(file_list)) {
+
+  file <- read.delim(file.path(data_dir, "zetaview", file_list[i]), skip = 70) # Skip metadata lines.
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
+  }
+
+  # We need to multiply the concentrations in each sample with the sample's dilution factor to obtain the original
+  # concentration and make samples comparable.
+  # --------------------------------------------------------------------------------------------------------------
+  dilution <- read.delim(file.path(data_dir, "zetaview", file_list[i]), FALSE, nrows = 1, skip = 24)
+  dilution <- dilution$V7
+  data[ , i + 1] <- file[1:1200, 3] * dilution # Add original concentration to the data object.
+  # --------------------------------------------------------------------------------------------------------------
+}
+rm(file)
+# ------------------------------------------------------------------------------------------------------------
+
+# Use Zetaview filenames to name data columns.
+# --------------------------------------------
+colnames(data) <- c(
+  "size",
+  paste(
+    sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sep = "_"
+  )
+)
+# --------------------------------------------
+
+# Subset to the particle size range.
+# ----------------------------------
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+# ----------------------------------
+```
+
+# Figure S5 E
+
+Smoothed histogram showing for each fraction the relative proportion of EVs at each size.
+Error bars represent at each size the standard deviation in EV proportion among fractions.
+
+```{r, results = "hide", fig.show = "hide"}
+# Create a dataset where replicates of each fraction are aggregated together by their mean.
+# -----------------------------------------------------------------------------------------
+names <- unique(sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])))
+fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data)) %in% names[i])]
+  fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data) <- c("size", names)
+# -----------------------------------------------------------------------------------------
+
+# Convert concentration values into proportion values.
+# ----------------------------------------------------
+fraction_data_proportion <- fraction_data
+for (i in seq_along(colnames(fraction_data_proportion))) {
+  if (i != 1) { # The first column contains sizes not concentrations.
+    fraction_data_proportion[i] <- fraction_data_proportion[i] / max(fraction_data_proportion[i])
+  }
+}
+# ----------------------------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+data_sub <- fraction_data_proportion[1:which(fraction_data_proportion$size == 297.5), ] # Values level off past ~300 nm.
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Fraction", "Proportion")
+molten_data$Size <- rep(data_sub$size, times = ncol(data_sub) - 1)
+# ---------------------------
+
+# The following section is modified from content on STHDA:
+# http://www.sthda.com/english/wiki/ggplot2-error-bars-quick-start-guide-r-software-and-data-visualization
+# This function is used to calculate the standard deviation among fractions of the EV proportion at each size.
+# This standard deviation is used to create error bars in the histogram.
+# ------------------------------------------------------------------------------------------------------------
+data_summary <- function(data, varname, groupnames){
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, groupnames, .fun=summary_func,
+                  varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+  return(data_sum)
+}
+# ------------------------------------------------------------------------------------------------------------
+
+# Add the standard deviation.
+# ---------------------------
+stats <- data_summary(molten_data, varname = "Proportion", groupnames = "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
+# ---------------------------
+```
+
+```{r}
+names(colour) <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1]))) # Add fraction labels.
+
+ggplot(molten_data, aes(Size, Proportion, group = Fraction, color = Fraction)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Proportion - SD, ymax = Proportion + SD), size = 0.2, position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative proportion of EVs per fraction") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), by = 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Proportion), by = 0.1),
+    limits = c(0, max(molten_data$Proportion))
+  ) +
+  scale_colour_manual(values = colour)
+```
+
+# Figure S5 C
+
+This figure compares the number of EVs captured in each fraction.
+A scaling factor based on the amount of tissue used for each donor is applied to correct for minor differences during sample prep.
+This scaling factor is also used to put concentrations on the scale of billion particles per mg brain tissue, aiding interpretation by shifting values to a range between 0 and 1.5.
+Error bars represent standard error of the mean for number of EVs among donors of each fraction.
+
+```{r, results = "hide", fig.show = "hide"}
+# Create scaling factor based on tissue amount used.
+# --------------------------------------------------
+scaling_factor <- data.frame(amount = c(1.25, 1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
+scaling_factor <- 1 / scaling_factor
+scaling_factor <- scaling_factor / 2e13 # A hand chosen value to transform concentrations to a range between 0 and ~1.5.
+rownames(scaling_factor) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+# --------------------------------------------------
+
+# Create a dataset where only technical replicates of donors are aggregated by their mean.
+# ----------------------------------------------------------------------------------------
+names <- unique(sub("_[^_]+$", replacement = "", x = colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("_[^_]+$", replacement = "", x = colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data) <- c("size", names)
+# ----------------------------------------------------------------------------------------
+
+# Apply each donor's scaling factor.
+# ----------------------------------
+donor_fraction_data_scaled <- donor_fraction_data
+for (i in seq_along(rownames(scaling_factor))) {
+  for (j in seq_along(colnames(donor_fraction_data_scaled))) {
+    if (sub("^([^_]*).*", replacement = "\\1", x = colnames(data))[j] == rownames(scaling_factor)[i])
+      donor_fraction_data_scaled[j] <- donor_fraction_data_scaled[j] * scaling_factor[i, ]
+  }
+}
+# ----------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+data_sub <- colSums(donor_fraction_data_scaled[ , -1])
+data_sub <- data.frame(Sample = names(data_sub), Concentration = data_sub)
+data_sub$Donor <- sub("^([^_]*).*", replacement = "\\1", x = data_sub$Sample)
+data_sub$Fraction <- sub("^[^_]*_([^_]*).*", replacement = "\\1", x = data_sub$Sample)
+# ---------------------------
+```
+
+```{r}
+names(colour) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1]))) # Add donor labels.
+
+ggplot(data_sub, aes(Fraction, Concentration)) +
+  geom_bar(stat = "summary", fill = "#F2F3F4", colour = "black") +
+  geom_errorbar(aes(width = 0.75), stat = "summary") +
+  geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
+  theme_light() +
+  ylab("Number of EVs (billion particles/mg brain tissue)") +
+  scale_y_continuous(breaks = seq(0, max(data_sub$Concentration) + 0.1, by = 0.1)) +
+  scale_fill_manual(values = colour)
+```
+
+# Figure S5 D
+
+This figure features binning of particle sizes and bar plots of the percentage of particles from the total per fraction in each of the bins.
+Error bars represent at each fraction and bin the standard deviation in EV percentage among donors.
+
+```{r, results = "hide", fig.show = "hide"}
+# Convert concentration values into percentage values.
+# ----------------------------------------------------
+donor_fraction_data_percentage <- donor_fraction_data
+for (i in seq_along(colnames(donor_fraction_data_percentage))) {
+  if (i != 1) { # The first column contains sizes not concentrations.
+    donor_fraction_data_percentage[i] <- (
+      donor_fraction_data_percentage[i] / sum(donor_fraction_data_percentage[i])
+    ) * 100
+  }
+}
+# ----------------------------------------------------
+
+# Transform data from wide format to long for binning and plotting.
+# -----------------------------------------------------------------
+data_sub <- donor_fraction_data_percentage
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("donor_fraction", "percentage")
+molten_data$size <- rep(data_sub$size, times = ncol(data_sub) - 1)
+# -----------------------------------------------------------------
+
+# Create 50 nm bins up to 800 nm.
+# -------------------------------
+molten_data_new <- data.frame()
+for (i in seq_along(unique(molten_data$donor_fraction))) {
+
+  molten_data_sub <- molten_data[molten_data$donor_fraction == unique(molten_data$donor_fraction)[i], ]
+  cut <- cut(molten_data_sub$size, breaks = seq(0, 800, 50))
+  df <- aggregate(molten_data_sub$percentage, by = list(cut), FUN = sum)
+
+  df$Group.1 <- factor(
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut)))),
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut))))
+  )
+  df$donor_fraction <- rep(unique(molten_data$donor_fraction)[i], nrow(df))
+
+  molten_data_new <- rbind(molten_data_new, df)
+}
+# -------------------------------
+
+# Organise data.
+# --------------
+colnames(molten_data_new) <- c("size", "percentage", "donor_fraction")
+molten_data_new$fraction <- sub(".*_", replacement = "", x = molten_data_new$donor_fraction)
+molten_data_new$fraction_size <- paste(molten_data_new$size, molten_data_new$fraction, sep = "_")
+# --------------
+
+# Add standard deviation while ordering data by particle size.
+# ------------------------------------------------------------
+molten_data_new <- data_summary(molten_data_new, varname = "percentage", groupnames = "fraction_size")
+molten_data_new$size <- factor(sub("_.*", replacement = "", x = molten_data_new$fraction_size))
+molten_data_new$size <- factor( # Factor levels are not in correct order and bin 50-100 should be moved near 0-50.
+  sub("_.*", replacement = "", x = molten_data_new$fraction_size),
+  levels = unique(molten_data_new$size)[c(1, 10, 2:9, 11:16)]
+)
+molten_data_new$Fraction <- sub(".*_", replacement = "", x = molten_data_new$fraction_size)
+# ------------------------------------------------------------
+```
+
+```{r}
+names(colour) <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1]))) # Add fraction labels.
+
+ggplot(molten_data_new, aes(size, percentage, fill = Fraction)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(
+    aes(ymin = percentage, ymax = percentage + sd), size = 0.3, position = position_dodge(), color = "darkgrey"
+  ) +
+  theme_light() +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$percentage), by = 2)) +
+  scale_fill_manual(values = colour) +
+  ylab("Percentage of EVs Per Fraction (%)") +
+  xlab("Diameter Range (nm)")
+```
+
+# Figure S5 F
+
+Box and whisker plots comparing the mode of each fraction.
+Among the donors, centre lines indicate the median of modes, lower and upper hinges represent the first and third quartiles, and whiskers extend from the hinges to a maximum of 1.5X the interquartile range.
+Because proper calculation of the mode uses counts of particles at particular sizes, we read in the original data again, instead using the count data rather than concentration.
+
+```{r, results = "hide", fig.show = "hide"}
+# The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
+# ------------------------------------------------------------------------------------------------------------
+file_list <- list.files(file.path(data_dir, "zetaview"))
+file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+for (i in seq_along(file_list)) {
+  file <- read.delim(file.path(data_dir, "zetaview", file_list[i]), skip = 70) # Skip metadata lines.
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
+  }
+  data[ , i + 1] <- file[1:1200, 2]
+}
+rm(file)
+# ------------------------------------------------------------------------------------------------------------
+
+# Use Zetaview filenames to name data columns.
+# --------------------------------------------
+colnames(data) <- c(
+  "size",
+  paste(
+    sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    sep = "_"
+  )
+)
+# --------------------------------------------
+
+# Subset to the particle size range.
+# ----------------------------------
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+# ----------------------------------
+
+# Create a dataset where only technical replicates of donors are aggregated by summing their counts.
+# This is different from the aggregation performed on concentration data, which used the mean.
+# Using the sum retains integer values and since the data will be used to find the mode, it is not an issue if some
+# fractions have a greater number of absolute counts.
+# -----------------------------------------------------------------------------------------------------------------
+names <- unique(sub("_[^_]+$", replacement = "", x = colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("_[^_]+$", replacement = "", x = colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowSums(data_sub)
+}
+colnames(donor_fraction_data) <- c("size", names)
+# -----------------------------------------------------------------------------------------------------------------
+
+# Calculate and add mode of each fraction.
+# ----------------------------------------
+stats <- data.frame(matrix(nrow = 1, ncol = ncol(donor_fraction_data) - 1))
+colnames(stats) <- colnames(donor_fraction_data[ , -1])
+rownames(stats) <- "Mode"
+
+counts_per_size <- vector("list", length = ncol(donor_fraction_data) - 1)
+for (i in seq_along(counts_per_size)) {
+  counts_per_size[[i]] <- rep(donor_fraction_data[ , 1], times = donor_fraction_data[ , i + 1])
+  stats[1, i] <- as.numeric( # Mode calculation.
+    names(table(counts_per_size[[i]]))[table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))]
+  )[1]
+}
+# ----------------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+molten_data <- as.data.frame(t(stats))
+molten_data$`Donor by Fraction` <- rownames(molten_data)
+molten_data <- melt(molten_data, id.vars = "Donor by Fraction")
+colnames(molten_data) <- c("Donor by Fraction", "Statistic", "Diameter")
+molten_data$Donor <- sub("^([^_]*).*", replacement = "\\1", x = molten_data$`Donor by Fraction`)
+molten_data$Fraction <- sub("^[^_]*_([^_]*).*", replacement = "\\1", x = molten_data$`Donor by Fraction`)
+# ---------------------------
+```
+
+```{r}
+names(colour) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1]))) # Add donor labels.
+
+ggplot(molten_data, aes(Fraction, Diameter)) +
+  stat_boxplot(geom = "errorbar", width = 0.5) +
+  geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
+  stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
+  geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
+  labs(title = "EV Diameter", y = "Diameter (nm)") +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = colour) +
+  scale_y_continuous(
+    breaks = seq(floor(min(molten_data$Diameter)), ceiling(max(molten_data$Diameter)), by = 2),
+    limits = c(floor(min(molten_data$Diameter)), ceiling(max(molten_data$Diameter)))
+  )
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```

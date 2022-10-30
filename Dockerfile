@@ -32,6 +32,8 @@ RUN apt-get update \
         -e "install.packages('khroma')" \
         -e "install.packages('svglite')" \
         -e "install.packages('fastmatch')" \
+        -e "install.packages('reshape2')" \
+        -e "install.packages('ggbeeswarm')" \
         -e "install.packages('BiocManager')" \
         -e "BiocManager::install('ComplexHeatmap')" \
         -e "BiocManager::install('DEP')" \

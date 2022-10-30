@@ -32,7 +32,7 @@ div.tocify {width: 100%;}
 div.main-container {max-width: none; width: 100%;}
 </style>
 
-*This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation)*  
+*This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
 *The purpose of this file is to reproduce results from the associated paper, specifically sections B and C of Figure 1, Supplementary Figure 2, section C of Supplementary Figure S3, and Supplementary Tables 1 and 2.*
 
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.

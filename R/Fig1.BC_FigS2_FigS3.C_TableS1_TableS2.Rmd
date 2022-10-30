@@ -17,7 +17,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "Fig1BC_FigS2_FigS3C_TableS1_TableS2.html"
+    "..", "results", "Fig1.BC_FigS2_FigS3.C_TableS1_TableS2.html"
   ))})
 ---
 

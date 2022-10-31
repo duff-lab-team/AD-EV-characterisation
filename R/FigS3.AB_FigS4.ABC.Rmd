@@ -1,0 +1,984 @@
+---
+title: "Figure S3 AB, Figure S4 ABC"
+author:
+  - name: "Emir Turkes and Stephanie Fowler"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+link-citations: true
+output:
+  html_document:
+    code_folding: show
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path("..", "results", "FigS3.AB_FigS4.ABC.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
+*The purpose of this file is to reproduce results from the associated paper, specifically sections A and B of Supplementary Figure 3 and sections A, B, and C of Supplementary Figure 4.*
+
+To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
+The toggle at the start of the document controls the visibility of all chunks.
+Note that several chunk options are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
+
+# Prep
+
+This section covers necessary but non-directly relevant code for generating the main sections.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+#    This file is part of AD-EV-characterisation.
+#    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
+#    University Medical Center
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+# Load required packages, suppressing startup messages.
+# -----------------------------------------------------
+packages <- c(
+  "conflicted", "DEP", "SummarizedExperiment", "mice", "magrittr", "tibble", "dplyr", "ggplot2", "scales", "limma",
+  "VennDiagram", "RColorBrewer", "DT"
+)
+invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
+# -----------------------------------------------------
+
+# Define global settings.
+# -----------------------
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
+# -----------------------
+
+# Define functions.
+# -----------------
+`%notin%` <- Negate(`%in%`)
+
+# Adds download button and horizontal scrolling to `DT::datatable`.
+# -----------------------------------------------------------------
+datatable_download <- function(dt) {
+  datatable(
+    dt,
+    options = list(
+      scrollX = TRUE, dom = "Blfrtip", buttons = list("copy", list(extend = "csv", text = "Download CSV"))
+    ),
+    extensions = "Buttons"
+  )
+}
+# -----------------------------------------------------------------
+# -----------------
+
+# Commonly used paths.
+# --------------------
+data_dir <- file.path("..", "data")
+cache_dir <- file.path("..", "tmp", "simulation") # Store intermediate data objects here.
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+# --------------------
+
+# The simulated dataset is modeled after the real dataset, so we start by reading in the real data.
+# -------------------------------------------------------------------------------------------------
+data <- read.delim(file.path(data_dir, "proteomics", "20220404_DOB_AllPatients_v1.pg_matrix.tsv"))
+# -------------------------------------------------------------------------------------------------
+
+# The first sample, at column 6, is actually Fraction 1 of Donor B and should be moved with the rest of Donor B.
+# --------------------------------------------------------------------------------------------------------------
+tmp1 <- data[ , 1:5]
+tmp2 <- as.data.frame(data[ , 6])
+colnames(tmp2) <- colnames(data)[6]
+tmp3 <- data[ , 7:14]
+tmp4 <- data[ , 15:ncol(data)]
+data <- cbind(tmp1, tmp3, tmp2, tmp4)
+rm(tmp1, tmp2, tmp3, tmp4)
+# --------------------------------------------------------------------------------------------------------------
+
+data <- data[ , c(1:5, c(1:32, 41:48, 33:40, 57:64, 49:56) + 5)] # Reorder some donors to match order in Zetaview data.
+
+# Assign usable sample labels.
+# ----------------------------
+colnames(data) <- c(
+  colnames(data)[1:5],
+  paste(paste0("F", seq(8)), rep("A", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("B", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("C", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("D", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("E", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("F", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("G", times = 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("H", times = 8), sep = " ")
+)
+# ----------------------------
+
+LFQ_columns <- 6:69 # For the simulation, no samples are excluded from the real data.
+
+# Reorder samples by fraction rather than donor.
+# ----------------------------------------------
+data <- data[ , c(1:5, (order(substring(colnames(data)[LFQ_columns], first = 2, last = 2)) + 5))]
+# ----------------------------------------------
+
+# Clean up protein identities.
+# ----------------------------
+remove <- which(data$Genes == "")
+if (length(remove > 0)) {
+  data <- data[-remove, ]
+}
+data <- make_unique(data, names = "Genes", ids = "Protein.Ids")
+# ----------------------------
+
+# Create a data frame for metadata.
+# Some columns are required for use with DEP.
+# -------------------------------------------
+experimental_design <- data.frame(
+  label = colnames(data)[6:69],
+  condition = paste0("Fraction ", substring(colnames(data)[LFQ_columns], first = 2, last = 2)),
+  replicate = rep(1:8, times = 8),
+  donor = substring(colnames(data)[LFQ_columns], first = 4),
+  groups = c(rep("F1_3", times = 24), rep("F4_6", times = 24), rep("F7_8", times = 16)) # Fraction groups to compare.
+)
+# -------------------------------------------
+
+data <- make_se(data, columns = LFQ_columns, expdesign = experimental_design)
+
+# Create simulated dataset with all complete cases.
+# We create a normal distribution using mean and sd values derived from the real dataset.
+# ---------------------------------------------------------------------------------------
+mean <- rowMeans(assay(data), na.rm = TRUE)
+sd <- apply(assay(data), MARGIN = 1, FUN = sd, na.rm = TRUE)
+discard <- which(is.na(sd)) # Rows with too many missing values in the real dataset produces NA values.
+sd <- sd[-discard]
+mean <- mean[-discard]
+set.seed(1)
+sim_data <- suppressWarnings(t(as.data.frame(mapply(function(x, y) rnorm(ncol(data), mean = x, sd = y), mean, sd))))
+colnames(sim_data) <- colnames(data)
+# ---------------------------------------------------------------------------------------
+
+# Store min values for each fraction here, as current MNAR amputation method overly amputes the lowest intensity values.
+# ----------------------------------------------------------------------------------------------------------------------
+min_vector <- vector("numeric", length = length(unique(data$condition)))
+for (i in seq_along(min_vector)) {
+  min_vector[i] <- min(sim_data[ , which(data$condition == unique(data$condition)[i])])
+}
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Introduce DEPs in the first 3000 proteins.
+# For each fraction group (F1_3, F4_6, and F7_8), 750 protein intensity are reduced by half in the other two groups
+# while 250 are increased by 1.5 in the group of interest.
+# -----------------------------------------------------------------------------------------------------------------
+idx <- 1
+for (group in unique(data$groups)) {
+  for (i in idx:(idx + 749)) {
+    sim_data[i, which(data$groups != group)] <- sim_data[i, which(data$groups != group)] / 2
+  }
+  idx <- idx + 750
+  for (i in idx:(idx + 249)) {
+    sim_data[i, which(data$groups == group)] <- sim_data[i, which(data$groups == group)] * 1.5
+  }
+  idx <- idx + 250
+}
+# -----------------------------------------------------------------------------------------------------------------
+
+# Create MAR imputation patterns (see `mice` documentation), where 0 is missing and 1 is complete.
+# It is computationally infeasible to model all possible patterns so we create a random sample of 255 patterns.
+# -------------------------------------------------------------------------------------------------------------
+pattern <- matrix(nrow = 255, ncol = ncol(data))
+for (fraction in unique(data$condition)) {
+  idx <- which(data$condition == fraction)
+  set.seed(idx[1])
+  pattern[ , idx] <- as.matrix( # For each sample in fraction, create random set of 1s and 0s.
+    expand.grid(replicate(length(idx), expr = 0:1, simplify = FALSE))[
+      rowSums(expand.grid(replicate(length(idx), expr = 0:1, simplify = FALSE))) >= 1, # Don't create any all 0 rows.
+    ][sample(255), ]
+  )
+}
+if (any(rowSums(pattern) == ncol(data))) {
+  pattern <- pattern[-(rowSums(pattern) == ncol(data)), ] # Remove any rows that contain all 1s.
+}
+# -------------------------------------------------------------------------------------------------------------
+
+# Perform MAR amputation using the "missing completely at random" mechanism.
+# We also weight patterns with fewer missing values as being more frequent, which appears to be the case in the real
+# dataset concerning MAR.
+# 5% of proteins undergo MAR amputation, roughly the amount observed in the real dataset.
+# ------------------------------------------------------------------------------------------------------------------
+freq <- rowSums(pattern) / sum(rowSums(pattern))
+set.seed(1)
+sim_data <- as.matrix(ampute(sim_data, prop = 0.05, patterns = pattern, freq = freq, mech = "MCAR")$amp)
+# ------------------------------------------------------------------------------------------------------------------
+```
+
+# Figure S3 A
+
+Relative proportion to log2 intensity chart on simulated data after MAR amputation but before MNAR imputation to illustrate the effect of MNAR amputation on missing value patterns.
+The MNAR cutoff line is drawn at the final position that will be used for the simulated data.
+
+```{r}
+# Create a temporary SE object for use with missing proportion to log2 intensity charts.
+# --------------------------------------------------------------------------------------
+sim_data_tmp <- sim_data
+colnames(sim_data_tmp) <- colnames(data)
+data_tmp <- data[rownames(data) %in% rownames(sim_data_tmp), ]
+rownames(data_tmp) <- paste0("Protein_", seq(nrow(data_tmp)))
+rownames(sim_data_tmp) <- rownames(data_tmp)
+assay(data_tmp) <- sim_data_tmp
+# --------------------------------------------------------------------------------------
+
+# Custom version of `DEP::plot_detect` for producing a plot to find the intersection at which MNAR becomes MAR.
+# -------------------------------------------------------------------------------------------------------------
+plot_detect_custom <- function(se) {
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(inherits(se, "SummarizedExperiment"))
+
+  se_assay <- assay(se)
+  # Show error if there are no missing values
+  if(!any(is.na(se_assay))) {
+    stop("No missing values in '", deparse(substitute(se)), "'",
+         call. = FALSE)
+  }
+
+  # Get a long data.frame of the assay data annotated with sample info
+  df <- se_assay %>%
+    data.frame() %>%
+    rownames_to_column() %>%
+    tidyr::gather(ID, val, -rowname)
+
+  # Get a summarized table with mean protein intensities and
+  # indication whether the protein has missing values
+  stat <- df %>%
+    group_by(rowname) %>%
+    summarize(mean = mean(val, na.rm = TRUE), missval = any(is.na(val)))
+
+  # Calculate cumulative fraction
+  cumsum <- stat %>%
+    group_by(missval) %>%
+    arrange(mean) %>%
+    mutate(num = 1, cs = cumsum(num), cs_frac = cs/n())
+
+  # Create a stacked probability density plot instead of the usual plots.
+  # ---------------------------------------------------------------------
+  color <- c("#74A9CF", "#045A8D")
+  p <- ggplot(stat, aes(mean, ..count.., fill = missval, color = missval)) +
+    geom_density(position = "fill") +
+    scale_x_continuous(expression(log[2]~"Intensity"), expand = c(0, 0), n.breaks = 10) +
+    scale_y_continuous("Relative proportion", labels = percent, expand = c(0, 0), n.breaks = 10) +
+    theme_DEP1() +
+    scale_color_manual("Missing values", values = color) +
+    scale_fill_manual("Missing values", values = color)
+  # ---------------------------------------------------------------------
+
+  p
+}
+# -------------------------------------------------------------------------------------------------------------
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.1")])
+plot_data <- ggplot_build(plot)
+F1_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
+```
+
+# Figure S3 B
+
+Relative proportion to log2 intensity charts on simulated data after introduction of MNAR amputation.
+Although MNAR is introduced from intensity 8.5 and lower, we draw the MNAR cutoff line at 12 for all fractions based on comparison of the MAR only and MAR+MNAR charts.
+It is reasonable for this cutoff to be drawn higher than where MNAR was amputed because the chart is created using row means of proteins.
+Consider a protein where all values were below 8.5 and amputed except for a stray value at 12, this would appear on the chart as MNAR being associated with an intensity of 12, which is technically true when using this row mean method.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# Ampute MNAR for a sample of protein values below a log2 intensity of 8.5.
+# We weight the sampling to ampute more strongly at lower intensity and adjust the number of samples to roughly reflect
+# the distribution of suspected MNAR in the real data.
+# ---------------------------------------------------------------------------------------------------------------------
+below_LOD <- which(sim_data < 8.5)
+set.seed(1)
+below_LOD <- sample(below_LOD, size = 5e6, replace = TRUE, prob = (1 / sim_data[below_LOD]) ^ 7.5)
+sim_data[below_LOD] <- NA
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Consolidate and clean up objects.
+# ---------------------------------
+colnames(sim_data) <- colnames(data)
+data <- data[rownames(data) %in% rownames(sim_data), ]
+rownames(data) <- paste0("Protein_", seq(nrow(data)))
+rownames(sim_data) <- rownames(data)
+
+assay(data) <- sim_data
+rm(sim_data, sim_data_tmp, data_tmp)
+
+unimputed_data <- data # For comparison later, keep an object that won't go through the imputation process.
+complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
+# ---------------------------------
+
+# Replace proteins missing entirely in a condition with minimum value per condition in random samples.
+# We use the min values that were captured pre-amputation, as these seem to better reflect mins found in real data.
+# Cache the object as operation can be lengthy.
+# -----------------------------------------------------------------------------------------------------------------
+rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
+if (file.exists(rds)) {
+  data <- readRDS(rds)
+} else {
+  for (fraction in unique(data$condition)) {
+    replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
+    set.seed(1)
+    col <- sample(which(data$condition == fraction), length(replace), TRUE)
+    for (i in seq_along(replace)) {
+      assay(data)[replace[i], col[i]] <- min_vector[which(unique(data$condition) == fraction)]
+    }
+  }
+  saveRDS(data, rds)
+}
+# -----------------------------------------------------------------------------------------------------------------
+```
+
+```{r}
+# Find intensity cutoff point at which MNAR becomes MAR by finding the inflection point of intensity where the
+# proportion of proteins with missing values dramatically level off.
+# Since for the simulation we also have the chart pre-MNAR, we use that to inform the cutoff.
+# Normally we do this separately for each condition, but it is not necessary for the simulation as we modeled all
+# fractions to have the same missing value distributions.
+# ---------------------------------------------------------------------------------------------------------------
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.1")])
+plot_data <- ggplot_build(plot)
+F1_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
+```
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# For brevity these plots are hidden with chunk options and can be viewed by removing those options when re-running the
+# R Markdown.
+# ---------------------------------------------------------------------------------------------------------------------
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.2")])
+plot_data <- ggplot_build(plot)
+F2_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F2_MNAR_cutoff) + ggtitle("Fraction 2")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.3")])
+plot_data <- ggplot_build(plot)
+F3_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F3_MNAR_cutoff) + ggtitle("Fraction 3")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.4")])
+plot_data <- ggplot_build(plot)
+F4_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F4_MNAR_cutoff) + ggtitle("Fraction 4")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.5")])
+plot_data <- ggplot_build(plot)
+F5_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F5_MNAR_cutoff) + ggtitle("Fraction 5")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.6")])
+plot_data <- ggplot_build(plot)
+F6_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F6_MNAR_cutoff) + ggtitle("Fraction 6")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.7")])
+plot_data <- ggplot_build(plot)
+F7_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F7_MNAR_cutoff) + ggtitle("Fraction 7")
+
+plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
+plot_data <- ggplot_build(plot)
+F8_MNAR_cutoff <- 12
+plot + geom_vline(xintercept = F8_MNAR_cutoff) + ggtitle("Fraction 8")
+# ---------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+```
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# Order each condition by row means and select the last protein to be included as MNAR.
+# We choose row means over medians because high expression outliers may be decent indication a protein is not MNAR.
+# -----------------------------------------------------------------------------------------------------------------
+F1_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], na.rm = TRUE))
+data <- data[F1_order, ]
+F1_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], na.rm = TRUE) < F1_MNAR_cutoff))
+
+F2_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], na.rm = TRUE))
+data <- data[F2_order, ]
+F2_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], na.rm = TRUE) < F2_MNAR_cutoff))
+
+F3_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], na.rm = TRUE))
+data <- data[F3_order, ]
+F3_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], na.rm = TRUE) < F3_MNAR_cutoff))
+
+F4_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], na.rm = TRUE))
+data <- data[F4_order, ]
+F4_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], na.rm = TRUE) < F4_MNAR_cutoff))
+
+F5_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], na.rm = TRUE))
+data <- data[F5_order, ]
+F5_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], na.rm = TRUE) < F5_MNAR_cutoff))
+
+F6_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], na.rm = TRUE))
+data <- data[F6_order, ]
+F6_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], na.rm = TRUE) < F6_MNAR_cutoff))
+
+F7_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], na.rm = TRUE))
+data <- data[F7_order, ]
+F7_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], na.rm = TRUE) < F7_MNAR_cutoff))
+
+F8_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], na.rm = TRUE))
+data <- data[F8_order, ]
+F8_MNAR <- names(which(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], na.rm = TRUE) < F8_MNAR_cutoff))
+# -----------------------------------------------------------------------------------------------------------------
+
+# In each condition, remove MAR (non-MNAR) proteins where the majority are missing.
+# Generally, we have found that MAR imputation with a majority of missing values leads to suspect imputation.
+# MNAR imputation however, does not seem to suffer from this limitation, and in fact it is logical that MNAR proteins
+# would have a high number of missing values.
+# -------------------------------------------------------------------------------------------------------------------
+F1_data <- data[ , which(data$condition == "Fraction.1")]
+F1_data <- F1_data[rownames(F1_data) %notin% F1_MNAR, ]
+missing_data <- assay(F1_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F1_data <- F1_data[-discard, ]
+}
+
+F2_data <- data[ , which(data$condition == "Fraction.2")]
+F2_data <- F2_data[rownames(F2_data) %notin% F2_MNAR, ]
+missing_data <- assay(F2_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F2_data <- F2_data[-discard, ]
+}
+
+F3_data <- data[ , which(data$condition == "Fraction.3")]
+F3_data <- F3_data[rownames(F3_data) %notin% F3_MNAR, ]
+missing_data <- assay(F3_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F3_data <- F3_data[-discard, ]
+}
+
+F4_data <- data[ , which(data$condition == "Fraction.4")]
+F4_data <- F4_data[rownames(F4_data) %notin% F4_MNAR, ]
+missing_data <- assay(F4_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F4_data <- F4_data[-discard, ]
+}
+
+F5_data <- data[ , which(data$condition == "Fraction.5")]
+F5_data <- F5_data[rownames(F5_data) %notin% F5_MNAR, ]
+missing_data <- assay(F5_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F5_data <- F5_data[-discard, ]
+}
+
+F6_data <- data[ , which(data$condition == "Fraction.6")]
+F6_data <- F6_data[rownames(F6_data) %notin% F6_MNAR, ]
+missing_data <- assay(F6_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F6_data <- F6_data[-discard, ]
+}
+
+F7_data <- data[ , which(data$condition == "Fraction.7")]
+F7_data <- F7_data[rownames(F7_data) %notin% F7_MNAR, ]
+missing_data <- assay(F7_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F7_data <- F7_data[-discard, ]
+}
+
+F8_data <- data[ , which(data$condition == "Fraction.8")]
+F8_data <- F8_data[rownames(F8_data) %notin% F8_MNAR, ]
+missing_data <- assay(F8_data) %>% data.frame(.)
+missing_data <- ifelse(is.na(missing_data), yes = 0, no = 1)
+discard <- which(rowSums(missing_data, TRUE) < 5)
+if (length(discard) > 0) {
+  F8_data <- F8_data[-discard, ]
+}
+# -------------------------------------------------------------------------------------------------------------------
+
+# In order to ensure that all conditions have MAR proteins with majority non-missing values, we perform the unions
+# below.
+# For example, out of the proteins that pass this QC in one condition, or have no missing values, we only keep those
+# that pass this QC, have no missing values, or are MNAR in all other conditions as well.
+# ------------------------------------------------------------------------------------------------------------------
+F1_MAR <- rownames(F1_data)[rownames(F1_data) %in% F2_MNAR | rownames(F1_data) %in% rownames(F2_data)]
+F1_MAR <- intersect(
+  F1_MAR, rownames(F1_data)[rownames(F1_data) %in% F3_MNAR | rownames(F1_data) %in% rownames(F3_data)]
+)
+F1_MAR <- intersect(
+  F1_MAR, rownames(F1_data)[rownames(F1_data) %in% F4_MNAR | rownames(F1_data) %in% rownames(F4_data)]
+)
+F1_MAR <- intersect(
+  F1_MAR, rownames(F1_data)[rownames(F1_data) %in% F5_MNAR | rownames(F1_data) %in% rownames(F5_data)]
+)
+F1_MAR <- intersect(
+  F1_MAR, rownames(F1_data)[rownames(F1_data) %in% F7_MNAR | rownames(F1_data) %in% rownames(F7_data)]
+)
+F1_MAR <- intersect(
+  F1_MAR, rownames(F1_data)[rownames(F1_data) %in% F8_MNAR | rownames(F1_data) %in% rownames(F8_data)]
+)
+
+F2_MAR <- rownames(F2_data)[rownames(F2_data) %in% F1_MNAR | rownames(F2_data) %in% rownames(F1_data)]
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F3_MNAR | rownames(F2_data) %in% rownames(F3_data)]
+)
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F4_MNAR | rownames(F2_data) %in% rownames(F4_data)]
+)
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F5_MNAR | rownames(F2_data) %in% rownames(F5_data)]
+)
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F6_MNAR | rownames(F2_data) %in% rownames(F6_data)]
+)
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F7_MNAR | rownames(F2_data) %in% rownames(F7_data)]
+)
+F2_MAR <- intersect(
+  F2_MAR, rownames(F2_data)[rownames(F2_data) %in% F8_MNAR | rownames(F2_data) %in% rownames(F8_data)]
+)
+
+F3_MAR <- rownames(F3_data)[rownames(F3_data) %in% F1_MNAR | rownames(F3_data) %in% rownames(F1_data)]
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F2_MNAR | rownames(F3_data) %in% rownames(F2_data)]
+)
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F4_MNAR | rownames(F3_data) %in% rownames(F4_data)]
+)
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F5_MNAR | rownames(F3_data) %in% rownames(F5_data)]
+)
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F6_MNAR | rownames(F3_data) %in% rownames(F6_data)]
+)
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F7_MNAR | rownames(F3_data) %in% rownames(F7_data)]
+)
+F3_MAR <- intersect(
+  F3_MAR, rownames(F3_data)[rownames(F3_data) %in% F8_MNAR | rownames(F3_data) %in% rownames(F8_data)]
+)
+
+F4_MAR <- rownames(F4_data)[rownames(F4_data) %in% F1_MNAR | rownames(F4_data) %in% rownames(F1_data)]
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F2_MNAR | rownames(F4_data) %in% rownames(F2_data)]
+)
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F3_MNAR | rownames(F4_data) %in% rownames(F3_data)]
+)
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F5_MNAR | rownames(F4_data) %in% rownames(F5_data)]
+)
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F6_MNAR | rownames(F4_data) %in% rownames(F6_data)]
+)
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F7_MNAR | rownames(F4_data) %in% rownames(F7_data)]
+)
+F4_MAR <- intersect(
+  F4_MAR, rownames(F4_data)[rownames(F4_data) %in% F8_MNAR | rownames(F4_data) %in% rownames(F8_data)]
+)
+
+F5_MAR <- rownames(F5_data)[rownames(F5_data) %in% F1_MNAR | rownames(F5_data) %in% rownames(F1_data)]
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F2_MNAR | rownames(F5_data) %in% rownames(F2_data)]
+)
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F3_MNAR | rownames(F5_data) %in% rownames(F3_data)]
+)
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F4_MNAR | rownames(F5_data) %in% rownames(F4_data)]
+)
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F6_MNAR | rownames(F5_data) %in% rownames(F6_data)]
+)
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F7_MNAR | rownames(F5_data) %in% rownames(F7_data)]
+)
+F5_MAR <- intersect(
+  F5_MAR, rownames(F5_data)[rownames(F5_data) %in% F8_MNAR | rownames(F5_data) %in% rownames(F8_data)]
+)
+
+F6_MAR <- rownames(F6_data)[rownames(F6_data) %in% F1_MNAR | rownames(F6_data) %in% rownames(F1_data)]
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F2_MNAR | rownames(F6_data) %in% rownames(F2_data)]
+)
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F3_MNAR | rownames(F6_data) %in% rownames(F3_data)]
+)
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F4_MNAR | rownames(F6_data) %in% rownames(F4_data)]
+)
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F5_MNAR | rownames(F6_data) %in% rownames(F5_data)]
+)
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F7_MNAR | rownames(F6_data) %in% rownames(F7_data)]
+)
+F6_MAR <- intersect(
+  F6_MAR, rownames(F6_data)[rownames(F6_data) %in% F8_MNAR | rownames(F6_data) %in% rownames(F8_data)]
+)
+
+F7_MAR <- rownames(F7_data)[rownames(F7_data) %in% F1_MNAR | rownames(F7_data) %in% rownames(F1_data)]
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F2_MNAR | rownames(F7_data) %in% rownames(F2_data)]
+)
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F3_MNAR | rownames(F7_data) %in% rownames(F3_data)]
+)
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F4_MNAR | rownames(F7_data) %in% rownames(F4_data)]
+)
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F5_MNAR | rownames(F7_data) %in% rownames(F5_data)]
+)
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F6_MNAR | rownames(F7_data) %in% rownames(F6_data)]
+)
+F7_MAR <- intersect(
+  F7_MAR, rownames(F7_data)[rownames(F7_data) %in% F8_MNAR | rownames(F7_data) %in% rownames(F8_data)]
+)
+
+F8_MAR <- rownames(F8_data)[rownames(F8_data) %in% F1_MNAR | rownames(F8_data) %in% rownames(F1_data)]
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F2_MNAR | rownames(F8_data) %in% rownames(F2_data)]
+)
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F3_MNAR | rownames(F8_data) %in% rownames(F3_data)]
+)
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F4_MNAR | rownames(F8_data) %in% rownames(F4_data)]
+)
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F5_MNAR | rownames(F8_data) %in% rownames(F5_data)]
+)
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F6_MNAR | rownames(F8_data) %in% rownames(F6_data)]
+)
+F8_MAR <- intersect(
+  F8_MAR, rownames(F8_data)[rownames(F8_data) %in% F7_MNAR | rownames(F8_data) %in% rownames(F7_data)]
+)
+
+rm(F1_data, F2_data, F3_data, F4_data, F5_data, F6_data, F7_data, F8_data)
+MAR <- unique(append(F1_MAR, c(F2_MAR, F3_MAR, F4_MAR, F5_MAR, F6_MAR, F7_MAR, F8_MAR)))
+
+F1_MNAR_passQC <- F1_MNAR[F1_MNAR %in% F2_MAR | F1_MNAR %in% F2_MNAR]
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F3_MAR | F1_MNAR %in% F3_MNAR])
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F4_MAR | F1_MNAR %in% F4_MNAR])
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F5_MAR | F1_MNAR %in% F5_MNAR])
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F6_MAR | F1_MNAR %in% F6_MNAR])
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F7_MAR | F1_MNAR %in% F7_MNAR])
+F1_MNAR_passQC <- intersect(F1_MNAR_passQC, F1_MNAR[F1_MNAR %in% F8_MAR | F1_MNAR %in% F8_MNAR])
+
+F2_MNAR_passQC <- F2_MNAR[F2_MNAR %in% F1_MAR | F2_MNAR %in% F1_MNAR]
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F3_MAR | F2_MNAR %in% F3_MNAR])
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F4_MAR | F2_MNAR %in% F4_MNAR])
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F5_MAR | F2_MNAR %in% F5_MNAR])
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F6_MAR | F2_MNAR %in% F6_MNAR])
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F7_MAR | F2_MNAR %in% F7_MNAR])
+F2_MNAR_passQC <- intersect(F2_MNAR_passQC, F2_MNAR[F2_MNAR %in% F8_MAR | F2_MNAR %in% F8_MNAR])
+
+F3_MNAR_passQC <- F3_MNAR[F3_MNAR %in% F1_MAR | F3_MNAR %in% F1_MNAR]
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F2_MAR | F3_MNAR %in% F2_MNAR])
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F4_MAR | F3_MNAR %in% F4_MNAR])
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F5_MAR | F3_MNAR %in% F5_MNAR])
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F6_MAR | F3_MNAR %in% F6_MNAR])
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F7_MAR | F3_MNAR %in% F7_MNAR])
+F3_MNAR_passQC <- intersect(F3_MNAR_passQC, F3_MNAR[F3_MNAR %in% F8_MAR | F3_MNAR %in% F8_MNAR])
+
+F4_MNAR_passQC <- F4_MNAR[F4_MNAR %in% F1_MAR | F4_MNAR %in% F1_MNAR]
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F2_MAR | F4_MNAR %in% F2_MNAR])
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F3_MAR | F4_MNAR %in% F3_MNAR])
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F5_MAR | F4_MNAR %in% F5_MNAR])
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F6_MAR | F4_MNAR %in% F6_MNAR])
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F7_MAR | F4_MNAR %in% F7_MNAR])
+F4_MNAR_passQC <- intersect(F4_MNAR_passQC, F4_MNAR[F4_MNAR %in% F8_MAR | F4_MNAR %in% F8_MNAR])
+
+F5_MNAR_passQC <- F5_MNAR[F5_MNAR %in% F1_MAR | F5_MNAR %in% F1_MNAR]
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F2_MAR | F5_MNAR %in% F2_MNAR])
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F3_MAR | F5_MNAR %in% F3_MNAR])
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F4_MAR | F5_MNAR %in% F4_MNAR])
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F6_MAR | F5_MNAR %in% F6_MNAR])
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F7_MAR | F5_MNAR %in% F7_MNAR])
+F5_MNAR_passQC <- intersect(F5_MNAR_passQC, F5_MNAR[F5_MNAR %in% F8_MAR | F5_MNAR %in% F8_MNAR])
+
+F6_MNAR_passQC <- F6_MNAR[F6_MNAR %in% F1_MAR | F6_MNAR %in% F1_MNAR]
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F2_MAR | F6_MNAR %in% F2_MNAR])
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F3_MAR | F6_MNAR %in% F3_MNAR])
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F4_MAR | F6_MNAR %in% F4_MNAR])
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F5_MAR | F6_MNAR %in% F5_MNAR])
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F7_MAR | F6_MNAR %in% F7_MNAR])
+F6_MNAR_passQC <- intersect(F6_MNAR_passQC, F6_MNAR[F6_MNAR %in% F8_MAR | F6_MNAR %in% F8_MNAR])
+
+F7_MNAR_passQC <- F7_MNAR[F7_MNAR %in% F1_MAR | F7_MNAR %in% F1_MNAR]
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F2_MAR | F7_MNAR %in% F2_MNAR])
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F3_MAR | F7_MNAR %in% F3_MNAR])
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F4_MAR | F7_MNAR %in% F4_MNAR])
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F5_MAR | F7_MNAR %in% F5_MNAR])
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F6_MAR | F7_MNAR %in% F6_MNAR])
+F7_MNAR_passQC <- intersect(F7_MNAR_passQC, F7_MNAR[F7_MNAR %in% F8_MAR | F7_MNAR %in% F8_MNAR])
+
+F8_MNAR_passQC <- F8_MNAR[F8_MNAR %in% F1_MAR | F8_MNAR %in% F1_MNAR]
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F2_MAR | F8_MNAR %in% F2_MNAR])
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F3_MAR | F8_MNAR %in% F3_MNAR])
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F4_MAR | F8_MNAR %in% F4_MNAR])
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F5_MAR | F8_MNAR %in% F5_MNAR])
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F6_MAR | F8_MNAR %in% F6_MNAR])
+F8_MNAR_passQC <- intersect(F8_MNAR_passQC, F8_MNAR[F8_MNAR %in% F7_MAR | F8_MNAR %in% F7_MNAR])
+
+MNAR <- unique(
+  append(
+    F1_MNAR_passQC,
+    c(F2_MNAR_passQC, F3_MNAR_passQC, F4_MNAR_passQC, F5_MNAR_passQC, F6_MNAR_passQC, F7_MNAR_passQC, F8_MNAR_passQC)
+  )
+)
+# ------------------------------------------------------------------------------------------------------------------
+
+# We join MAR and MNAR lists and subset the data.
+# -----------------------------------------------
+keep <- unique(append(MAR, MNAR))
+data <- data[rownames(data) %in% keep, ]
+data <- data[sort(rownames(data)), ]
+# -----------------------------------------------
+
+# Normalise all data using VSN.
+# -----------------------------
+data <- normalize_vsn(data)
+unimputed_data <- normalize_vsn(unimputed_data)
+complete_cases <- normalize_vsn(complete_cases)
+# -----------------------------
+
+# The main imputation code.
+# -------------------------
+impute1 <- data[ , which(data$condition == "Fraction.1")]
+impute_vector <- rownames(impute1) %in% F1_MNAR
+set.seed(1)
+impute1 <- impute(impute1, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute2 <- data[ , which(data$condition == "Fraction.2")]
+impute_vector <- rownames(impute2) %in% F2_MNAR
+set.seed(1)
+impute2 <- impute(impute2, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute3 <- data[ , which(data$condition == "Fraction.3")]
+impute_vector <- rownames(impute3) %in% F3_MNAR
+set.seed(1)
+impute3 <- impute(impute3, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute4 <- data[ , which(data$condition == "Fraction.4")]
+impute_vector <- rownames(impute4) %in% F4_MNAR
+set.seed(1)
+impute4 <- impute(impute4, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute5 <- data[ , which(data$condition == "Fraction.5")]
+impute_vector <- rownames(impute5) %in% F5_MNAR
+set.seed(1)
+impute5 <- impute(impute5, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute6 <- data[ , which(data$condition == "Fraction.6")]
+impute_vector <- rownames(impute6) %in% F6_MNAR
+set.seed(1)
+impute6 <- impute(impute6, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute7 <- data[ , which(data$condition == "Fraction.7")]
+impute_vector <- rownames(impute7) %in% F7_MNAR
+set.seed(1)
+impute7 <- impute(impute7, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute8 <- data[ , which(data$condition == "Fraction.8")]
+impute_vector <- rownames(impute8) %in% F8_MNAR
+set.seed(1)
+impute8 <- impute(impute8, fun = "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+# -------------------------
+
+# Move imputed data to main object and clean up.
+# ----------------------------------------------
+assay(data, withDimnames = FALSE) <- cbind(
+  assay(impute1), assay(impute2), assay(impute3), assay(impute4),
+  assay(impute5), assay(impute6), assay(impute7), assay(impute8)
+)
+rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8)
+# ----------------------------------------------
+```
+
+# Figure S4 C
+
+This figure is a Venn diagram comparing DEPs in the imputed, unimputed, and complete cases pipelines in the simulated data.
+All limma parameters are set the same as the prior DEP analysis.
+We compare DEPs unique for each fraction group (F1_3, F4_6, and F7_8), as these were the type of DEPs that were built into the simulation.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# The same limma design is used for all pipelines.
+# ------------------------------------------------
+limma_design <- model.matrix(~ 0 + experimental_design$groups)
+colnames(limma_design) <- unique(experimental_design$groups)
+contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
+# ------------------------------------------------
+
+# Loop through pipeline data, finding DEPs using limma for each one.
+# ------------------------------------------------------------------
+data_list <- list(data, unimputed_data, complete_cases)
+venn_list <- vector("list", length = length(data_list))
+results_list <- vector("list", length = length(data_list)) # Also keep a list of results for comparison table later.
+names(venn_list) <- c("Imputed", "Unimputed", "Complete cases")
+for (i in seq_along(data_list)) {
+
+  # The main limma code.
+  # --------------------
+  fit <- lmFit(assay(data_list[[i]]), design = limma_design)
+  cont_fit <- eBayes(contrasts.fit(fit, contrasts = contrast_mat))
+  tests <- decideTests(cont_fit, method = "global")
+  # --------------------
+
+  # The full stats table can only be obtained by writing it out as a TSV then reading it back in.
+  # ---------------------------------------------------------------------------------------------
+  write.fit(
+    cont_fit, results = tests, file = file.path(cache_dir, "results.tsv"),
+    adjust = "BH", method = "global", F.adjust = "BH"
+  )
+  results <- read.delim(file.path(cache_dir, "results.tsv"))
+  results_list[[i]] <- results
+  # ---------------------------------------------------------------------------------------------
+
+  # Subset stats table to highlight specific significant comparison combinations, then add to Venn diagram list.
+  # For example, `F1_3` describe terms that are differentially expressed in `F1_3`, compared to both `F4_6` and `F7_8`.
+  # -------------------------------------------------------------------------------------------------------------------
+  tests_up <- tests[
+    tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0 |
+      tests[ , 1] == 1 & tests[ , 2] == 0 & tests[ , 3] == 0 |
+      tests[ , 1] == 0 & tests[ , 2] == 1 & tests[ , 3] == 0,
+  ]
+  F1_3 <- results[results$X %in% rownames(tests_up), ]$X
+
+  tests_up <- tests[
+    tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0 |
+      tests[ , 1] == -1 & tests[ , 3] == 0 & tests[ , 2] == 0 |
+      tests[ , 1] == 0 & tests[ , 3] == 1 & tests[ , 2] == 0,
+  ]
+  F4_6 <- results[results$X %in% rownames(tests_up), ]$X
+
+  tests_up <- tests[
+    tests[ , 2] == -1 & tests[ , 3] == -1 & tests[ , 1] == 0 |
+      tests[ , 2] == -1 & tests[ , 3] == 0 & tests[ , 1] == 0 |
+      tests[ , 2] == 0 & tests[ , 3] == -1 & tests[ , 1] == 0,
+  ]
+  F7_8 <- results[results$X %in% rownames(tests_up), ]$X
+
+  venn_list[[i]] <- unique(c(F1_3, F4_6, F7_8))
+  # -------------------------------------------------------------------------------------------------------------------
+}
+# ------------------------------------------------------------------
+
+venn_list <- lapply(venn_list, FUN = function(x) x[!is.na(x)]) # Unimputed data produces NAs, which must be removed.
+
+plot <- venn.diagram(
+  venn_list, filename = NULL, disable.logging = TRUE,
+  category.names = names(venn_list), fill = brewer.pal(3, name = "Pastel2")
+)
+```
+
+```{r}
+grid.draw(plot)
+```
+
+# Figure S4 B
+
+Another Venn diagram but this time only showing DEPs within the first 3000 proteins, which were the ones where DEPs were introduced in the simulation.
+Therefore, any DEPs captured within this range are considered true positives.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+venn_list_true <- lapply(venn_list, FUN = function(x) x[as.numeric(gsub("\\D+", replacement = "", x = x)) <= 3000])
+
+plot <- venn.diagram(
+  venn_list_true, filename = NULL, disable.logging = TRUE,
+  category.names = names(venn_list), fill = brewer.pal(3, name = "Pastel2")
+)
+```
+
+```{r}
+grid.draw(plot)
+```
+
+# Figure S4 A
+
+A table showing various metrics comparing the three pipelines.
+The percent true DEPs captured details what percentage of the true 3000 DEPs were detected as DEP in each pipeline.
+The accuracy, from 0 to 100%, measures out of all the DEPs detected for each pipeline, what percentage were the 3000 true DEPs.
+The average Adj F p-value of true DEPs is the mean Adj F p-value of the 3000 DEPs for each pipeline.
+If an Adj F p-value couldn't be assigned to a protein, that protein is assigned a value of 1 for the calculation.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# Process `results_list` to extract adjusted F p-values for the 3000 true DEPs, then make sure any protein without a
+# value is assigned a value of 1.
+# ------------------------------------------------------------------------------------------------------------------
+results_list <- lapply(
+  results_list, FUN = function(x) x[as.numeric(gsub("\\D+", replacement = "", x = x$X)) <= 3000, ]$F.p.value.adj
+)
+results_list <- lapply(results_list, FUN = function(x) replace(x, list = is.na(x), values = 1))
+results_list <- lapply(results_list, FUN = function(x) c(x, rep(1, times = 3000 - length(x))))
+# ------------------------------------------------------------------------------------------------------------------
+
+# Create a data frame containing the metrics described for all pipelines.
+# -----------------------------------------------------------------------
+summary <- data.frame(
+  Imputed = c(
+    signif(length(venn_list_true$Imputed) / 3000 * 100, digits = 4),
+    signif(length(venn_list_true$Imputed) / length(venn_list$Imputed) * 100, digits = 4),
+    signif(mean(results_list[[1]]), digits = 4)
+  ),
+  Unimputed = c(
+    signif(length(venn_list_true$Unimputed) / 3000 * 100, digits = 4),
+    signif(length(venn_list_true$Unimputed) / length(venn_list$Unimputed) * 100, digits = 4),
+    signif(mean(results_list[[2]]), digits = 4)
+  ),
+  Complete = c(
+    signif(length(venn_list_true$`Complete cases`) / 3000 * 100, digits = 4),
+    signif(length(venn_list_true$`Complete cases`) / length(venn_list$`Complete cases`) * 100, digits = 4),
+    signif(mean(results_list[[3]]), digits = 4)
+  )
+)
+
+rownames(summary) <- c("Percent true DEPs captured", "Accuracy", "Average Adj F P-value of true DEPs")
+colnames(summary) <- c("Imputed", "Unimputed", "Complete cases")
+# -----------------------------------------------------------------------
+```
+
+```{r}
+datatable_download(summary)
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```

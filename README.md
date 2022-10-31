@@ -23,22 +23,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Emir Turkes can be contacted at emir.turkes@eturkes.com
 ```
 
-Characterisation of fractionated extracellular vesicles in Alzheimer's Disease.
-Other than the raw data, this repo contains everything needed to reproduce results in the associated paper that were analysed using R.
+### 1. Quick Start
 
+In order to quickly view pre-computed results, simply download the `results` folder in this Google Drive link:  
+[https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)  
+Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view paper figues and the code used to produce them.
+
+### 2. Further Analysis
+
+Beyond here is information for reproducing or performing your own analysis.
+As in the Quick Start, visit the Google Drive link, this time downloading both `data` and `results`.
+These should both be place in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
 Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
 These may have to be recreated on non-Unix OS such as Windows.
 
-To obtain the raw data and pre-computed results, please download this Google Drive folder:  
-[https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)  
-The folder should then be renamed `storage` and placed in the top-level of this project.
+We provide two methods below for setting up an analysis environment and running the code.
+Alternatively, a user may wish to use their own R install and packages, however this approach may require troubleshooting and does not guarantee reproduction of our results.
 
-If one wishes to simply see how the results were generated, they can visit the `results` directory at the top-level and open the pre-compiled R Markdown HTML files in a web browser.
-These files will contain the documentation needed to view the results and understand how they were generated.
-Otherwise, below we provide several options below for reproducing the results from scratch.
-A user can alternatively simply use the default R version on their system and manually install needed packages, however, it is not supported and does not guarantee perfect reproduction of our results.
-
-### 1. Docker
+#### A. Docker
 
 Docker is virtualisation software that allows the distribution of reproducible operating system environments, including userland software like R packages.
 See here to install and set up Docker [https://www.docker.com/](https://www.docker.com/).
@@ -81,7 +83,7 @@ The right-most argument is the user@ip-address details used to log into the serv
 Once connected, visit `http://localhost:8787/` as before, assuming 8787 is the local port in the tunnel.
 More details can be found here: [https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/](https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/).
 
-### 2. Apptainer
+#### B. Apptainer
 
 Apptainer (previously named Singularity) is similar to Docker except with a different security structure that makes it easier to integrate with high-performance computing (HPC) clusters.
 Installation instructions can be found at [https://apptainer.org/](https://apptainer.org/).

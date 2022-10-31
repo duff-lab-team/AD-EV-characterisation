@@ -74,6 +74,10 @@ invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, charact
 
 # Define global settings.
 # -----------------------
+conflict_prefer("cbind", winner = "BiocGenerics", quiet = TRUE)
+conflict_prefer("rbind", winner = "BiocGenerics", quiet = TRUE)
+conflict_prefer("intersect", winner = "BiocGenerics", quiet = TRUE)
+
 knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 ht_opt$message <- FALSE # Turn off messages to use rasterisation when plotting large matrices.
 # -----------------------

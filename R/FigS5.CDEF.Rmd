@@ -70,6 +70,8 @@ invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, charact
 
 # Define global settings.
 # -----------------------
+conflict_prefer("rename", winner = "plyr", quiet = TRUE)
+
 knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 # -----------------------
 

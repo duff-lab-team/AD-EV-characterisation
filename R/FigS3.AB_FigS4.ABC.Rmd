@@ -34,6 +34,7 @@ div.main-container {max-width: none; width: 100%;}
 *This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
 *The purpose of this file is to reproduce results from the associated paper, specifically sections A and B of Supplementary Figure 3 and sections A, B, and C of Supplementary Figure 4.*
 
+The table of contents in the top left is clickable and can be used to quickly navigate the document.
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
 The toggle at the start of the document controls the visibility of all chunks.
 Note that several chunk options are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.

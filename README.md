@@ -32,6 +32,7 @@ To obtain the raw data and pre-computed results, please download this Google Dri
 The folder should then be renamed `storage` and placed in the top-level of this project.
 
 If one wishes to simply see how the results were generated, they can visit the `results` directory at the top-level and open the pre-compiled R Markdown HTML files in a web browser.  
+These files will contain the documentation needed to view the results and understand how they were generated.  
 Otherwise, below we provide several options below for reproducing the results from scratch.  
 A user can alternatively simply use the default R version on their system and manually install needed packages, however, it is not supported and does not guarantee perfect reproduction of our results.
 
@@ -45,10 +46,11 @@ Once installed, the simplest option is to run `run_all.R` using the command belo
 docker-compose up all
 ```
 
-This will compile all R Markdown files non-interactively, replacing the existing files in the `results` dir and creating a `cache` dir containing intermediate data objects.
+This will compile all R Markdown files non-interactively, replacing the existing files in the `results` dir and creating a `cache` dir containing intermediate data objects.  
+Note that until a solution is implemented, this method creates file as the root user.  
+To avoid this, consider using `run_all.R` or other files using RStudio Server, as instructed below.
 
-Alternatively, one may prefer to explore the results in RStudio.  
-We provide this through Docker using RStudio Server.  
+RStudio Server is provided within the Docker image and can readily be accessed through a web browser either on one's local machine or through a remote server.  
 To get started, first create a `.env` file with the port that RStudio should connect to, as below:
 
 ```
@@ -66,7 +68,7 @@ docker-compose up rstudio
 
 You can then visit `http://localhost:8787/` in a web browser to use RStudio.
 
-This Dockerised version of RStudio can also be accessed from a remoted machine using an SSH tunnel like the one below:
+If one wants to run RStudio Server on a remote machine, it can be accessed through a local web browser by first running an SSH tunnel like below:
 
 ```
 ssh -N -L 8787:localhost:8787 user@ip-address
@@ -74,6 +76,7 @@ ssh -N -L 8787:localhost:8787 user@ip-address
 
 The left-most port specifies the port desired locally, whereas the right-most is the port on the server.  
 The right-most argument is the user@ip-address details used to log into the server.  
+Once connected, visit `http://localhost:8787/` as before, assuming 8787 is the local port in the tunnel.  
 More details can be found here: [https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/](https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/).
 
 ### 2. Apptainer
@@ -92,4 +95,5 @@ To use RStudio, no `.env` file is needed, it is instead included in the command:
 sh ./apptainer.sh rstudio 8787
 ```
 
-As before, an SSH tunnel is required if connecting remotely.
+In the same way as using Docker, RStudio Server will be accessible through a local web browser on localhost at the desired port.  
+An SSH tunnel can also be identically configured for accessing remote servers.

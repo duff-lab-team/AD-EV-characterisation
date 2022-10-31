@@ -1,6 +1,6 @@
 # AD EV Characterisation
-#### *This analysis is complete and should not see major updates*
-**Characterisation of fractionated extracellular vesicles in Alzheimer's Disease**
+#### *This analysis is complete and should not see major updates.*
+**This repo contains code and results associated with data characterising fractionated extracellular vesicles in Alzheimer's Disease.**
 
 ```
 This file is part of AD-EV-characterisation.

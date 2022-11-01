@@ -51,10 +51,8 @@ docker-compose up all
 ```
 
 This will compile all R Markdown files non-interactively, replacing the existing files in the `results` dir and creating a `cache` dir containing intermediate data objects.
-Note that until a solution is implemented, this method creates file as the root user.
-To avoid this, consider using `run_all.R` or other files using RStudio Server, as instructed below.
 
-RStudio Server is provided within the Docker image and can readily be accessed through a web browser either on one's local machine or through a remote server.
+For more in-depth exploration, RStudio Server is provided within the Docker image and can readily be accessed through a web browser either on one's local machine or through a remote server.
 To get started, first create a `.env` file with the port that RStudio should connect to, as below:
 
 ```

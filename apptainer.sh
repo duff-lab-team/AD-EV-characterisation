@@ -22,17 +22,17 @@
 # Shell script for building an Apptainer image from Docker Hub and running it
 # See README of this project for further details
 
-singularity pull ad-ev-characterisation.simg docker://dufflab/ad-ev-characterisation:R4.2.1v5
+apptainer pull ad-ev-characterisation.sif docker://dufflab/ad-ev-characterisation:R4.2.1v5
 
 if [ "$1" = "all" ]; then
-    singularity exec \
+    apptainer exec \
         -B .:/home/rstudio/AD-EV-characterisation \
-        ad-ev-characterisation.simg \
+        ad-ev-characterisation.sif \
     Rscript -e "source('/home/rstudio/AD-EV-characterisation/R/run_all.R')"
 
 elif [ "$1" = "rstudio" ]; then
     DISABLE_AUTH=true RSTUDIO_SESSION_TIMEOUT="0" \
-    singularity exec \
+    apptainer exec \
         -B .:/home/rstudio/AD-EV-characterisation \
-        ad-ev-characterisation.simg rserver --www-address=127.0.0.1 --www-port=$2
+        ad-ev-characterisation.sif rserver --www-address=127.0.0.1 --www-port=$2
 fi

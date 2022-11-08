@@ -1,6 +1,6 @@
 # AD EV Characterisation
 #### *This analysis is complete and should not see major updates.*
-**In this project is the code and results associated with data characterising fractionated extracellular vesicles in Alzheimer's Disease.**
+**In this project are the code and results associated with data characterising fractionated extracellular vesicles in Alzheimer's Disease.**
 
 ```
 This file is part of AD-EV-characterisation.
@@ -35,7 +35,7 @@ Beyond here is information for reproducing or performing your own analysis.
 As in the Quick Start, visit the Google Drive link, this time downloading both `data` and `results`.
 These should both be place in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
 Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
-These may have to be recreated on non-Unix OS such as Windows.
+These may have to be recreated on non-Unix systems such as Windows.
 
 We provide two methods below for setting up an analysis environment and running the code.
 Alternatively, a user may wish to use their own R install and packages, however this approach may require troubleshooting and does not guarantee reproduction of our results.

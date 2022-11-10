@@ -279,7 +279,7 @@ molten_data$Fraction <- sub("^[^_]*_([^_]*).*", replacement = "\\1", x = molten_
 ggplot(molten_data, aes(Fraction, Diameter)) +
   stat_boxplot(geom = "errorbar", width = 0.5) +
   geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
-  stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
+  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
   geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
   labs(title = "EV Diameter", y = "Diameter (nm)") +
   theme_light() +

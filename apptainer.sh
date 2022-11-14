@@ -34,5 +34,5 @@ elif [ "$1" = "rstudio" ]; then
     DISABLE_AUTH=true RSTUDIO_SESSION_TIMEOUT="0" \
     apptainer exec \
         -B .:/home/rstudio/AD-EV-characterisation \
-        ad-ev-characterisation.sif rserver --www-address=127.0.0.1 --www-port=$2
+        ad-ev-characterisation.sif rserver --www-address=127.0.0.1 --www-port=$2 --server-user=$USER
 fi

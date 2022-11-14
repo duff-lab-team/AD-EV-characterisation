@@ -33,7 +33,7 @@ Inside the folder are HTML files that can be opened in any web browser; they wil
 
 Beyond here is information for reproducing or performing your own analysis.
 As in the Quick Start, visit the Google Drive link, this time downloading both `data` and `results`.
-These should both be place in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
+These should both be placed in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
 Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
 These may have to be recreated on non-Unix systems such as Windows.
 

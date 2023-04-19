@@ -23,13 +23,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Emir Turkes can be contacted at emir.turkes@eturkes.com
 ```
 
-### 1. Quick Start
+### 1. Supplemental Figures
 
-In order to quickly view pre-computed results, simply download the `results` folder in this Google Drive link:  
-[https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)  
-Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view paper figues and the code used to produce them.
+Several supplemental figures related to the main manuscript are contained in a PDF file hosted in Google Drive.
+It can be found in the `supplemental` folder in the following link:  
+[https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)
 
-### 2. Further Analysis
+### 2. Main Figures
+
+Reproduction of main figures from the manuscript can be found in the `results` folder of the same Google Drive link.
+Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view the figues and the code used to produce them.
+
+### 3. Further Analysis
 
 Beyond here is information for reproducing or performing your own analysis.
 As in the Quick Start, visit the Google Drive link, this time downloading both `data` and `results`.

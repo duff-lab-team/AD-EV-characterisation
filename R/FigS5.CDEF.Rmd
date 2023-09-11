@@ -321,7 +321,7 @@ for (i in seq_along(colnames(fraction_data_proportion))) {
 
 # Prep the data for plotting.
 # ---------------------------
-data_sub <- fraction_data_proportion[1:which(fraction_data_proportion$size == 297.5), ] # Values level off past ~300 nm.
+data_sub <- fraction_data_proportion[1:which(fraction_data_proportion$size == 502.5), ] # Values level off past ~500 nm.
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Fraction", "Proportion")
 molten_data$Size <- rep(data_sub$size, times = ncol(data_sub) - 1)

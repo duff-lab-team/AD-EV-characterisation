@@ -27,6 +27,7 @@ RUN apt-get update \
         zlib1g-dev \
         libnetcdf15 \
         libglpk-dev \
+        libgeos-dev \
     && Rscript -e "install.packages('rmarkdown')" \
         -e "install.packages('markdown')" \
         -e "install.packages('conflicted')" \

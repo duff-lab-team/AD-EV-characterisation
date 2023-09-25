@@ -34,3 +34,7 @@ rmarkdown::render(
   file.path("FigS5.CDEF.Rmd"),
   output_file = file.path("..", "results", "FigS5.CDEF.html")
 )
+rmarkdown::render(
+  file.path("FigR2_FigR3_FigR4.AB.Rmd"),
+  output_file = file.path("..", "results", "FigR2_FigR3_FigR4.AB.html")
+)

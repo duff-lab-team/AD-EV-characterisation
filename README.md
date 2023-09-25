@@ -1,6 +1,6 @@
 # AD EV Characterisation
 #### *This analysis is complete and should not see major updates.*
-**In this project are the code and results associated with data characterising fractionated extracellular vesicles in Alzheimer's Disease.**
+**In this project are the code and results associated with the manuscript entitled: “Tau filaments are tethered within brain extracellular vesicles in Alzheimer's disease”.**
 
 ```
 This file is part of AD-EV-characterisation.
@@ -29,9 +29,9 @@ Several supplemental figures related to the main manuscript are contained in a P
 It can be found in the `supplemental` folder in the following link:  
 [https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)
 
-### 2. Main Figures
+### 2. Main Figures and Figures Addressing Reviewer Comments
 
-Reproduction of main figures from the manuscript can be found in the `results` folder of the same Google Drive link.
+Reproduction of main figures from the manuscript and figures addressing reviewer comments can be found in the `results` folder of the same Google Drive link.
 Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view the figues and the code used to produce them.
 
 ### 3. Further Analysis

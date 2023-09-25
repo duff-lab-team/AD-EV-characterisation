@@ -26,6 +26,7 @@ RUN apt-get update \
         libxml2 \
         zlib1g-dev \
         libnetcdf15 \
+        libglpk-dev \
     && Rscript -e "install.packages('rmarkdown')" \
         -e "install.packages('markdown')" \
         -e "install.packages('conflicted')" \
@@ -36,6 +37,7 @@ RUN apt-get update \
         -e "install.packages('ggbeeswarm')" \
         -e "install.packages('VennDiagram')" \
         -e "install.packages('mice')" \
+        -e "install.packages('Seurat')" \
         -e "install.packages('BiocManager')" \
         -e "BiocManager::install('ComplexHeatmap')" \
         -e "BiocManager::install('DEP')" \

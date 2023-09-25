@@ -55,7 +55,7 @@ Once installed, the simplest option is to run `run_all.R` using the command belo
 docker-compose up all
 ```
 
-This will compile all R Markdown files non-interactively, replacing the existing files in the `results` dir and creating a `cache` dir containing intermediate data objects.
+This will compile all R Markdown files non-interactively, replacing the existing files in the `results` dir and creating a `tmp` dir containing intermediate data objects.
 
 For more in-depth exploration, RStudio Server is provided within the Docker image and can readily be accessed through a web browser either on one's local machine or through a remote server.
 To get started, first create a `.env` file with the port that RStudio should connect to, as below:

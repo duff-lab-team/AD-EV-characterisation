@@ -22,19 +22,35 @@
 
 setwd(dirname(parent.frame(2)$ofile)) # Move to location of this file.
 
-rmarkdown::render(
-  file.path("Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.Rmd"),
-  output_file = file.path("..", "results", "Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.html")
+xfun::Rscript_call(
+  rmarkdown::render,
+  list(
+    file.path("Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.Rmd"),
+    output_file = file.path("..", "results", "Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.html"),
+    envir = new.env()
+  )
 )
-rmarkdown::render(
-  file.path("FigS3.AB_FigS4.ABC.Rmd"),
-  output_file = file.path("..", "results", "FigS3.AB_FigS4.ABC.html")
+xfun::Rscript_call(
+  rmarkdown::render,
+  list(
+    file.path("FigS3.AB_FigS4.ABC.Rmd"),
+    output_file = file.path("..", "results", "FigS3.AB_FigS4.ABC.html"),
+    envir = new.env()
+  )
 )
-rmarkdown::render(
-  file.path("FigS5.CDEF.Rmd"),
-  output_file = file.path("..", "results", "FigS5.CDEF.html")
+xfun::Rscript_call(
+  rmarkdown::render,
+  list(
+    file.path("FigS5.CDEF.Rmd"),
+    output_file = file.path("..", "results", "FigS5.CDEF.html"),
+    envir = new.env()
+  )
 )
-rmarkdown::render(
-  file.path("FigR2_FigR3_FigR4.AB.Rmd"),
-  output_file = file.path("..", "results", "FigR2_FigR3_FigR4.AB.html")
+xfun::Rscript_call(
+  rmarkdown::render,
+  list(
+    file.path("FigR2_FigR3_FigR4.AB.Rmd"),
+    output_file = file.path("..", "results", "FigR2_FigR3_FigR4.AB.html"),
+    envir = new.env()
+  )
 )

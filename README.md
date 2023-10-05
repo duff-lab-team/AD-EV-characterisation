@@ -25,11 +25,11 @@ Emir Turkes can be contacted at emir.turkes@eturkes.com
 
 ### 1. Supplemental Figures
 
-Several supplemental figures related to the main manuscript are contained in a PDF file hosted in Google Drive.
-It can be found in the `supplemental` folder in the following link:  
+Several supplemental figures and methodology related to the main manuscript and revised manuscript are contained in PDF files hosted in Google Drive.
+They can be found in the `supplemental` folder in the following link:  
 [https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)
 
-### 2. Main Figures and Figures Addressing Reviewer Comments
+### 2. Data and Code Used to Reproduce Manuscript Figures
 
 Reproduction of main figures from the manuscript and figures addressing reviewer comments can be found in the `results` folder of the same Google Drive link.
 Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view the figues and the code used to produce them.

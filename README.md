@@ -4,7 +4,7 @@
 
 ```
 This file is part of AD-EV-characterisation.
-Copyright (C) 2022-2023  Emir Turkes, Stephanie Fowler, UK DRI at
+Copyright (C) 2022-2024  Emir Turkes, Stephanie Fowler, UK DRI at
 UCL, Columbia University Medical Center
 
 This program is free software: you can redistribute it and/or modify

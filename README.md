@@ -23,15 +23,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Emir Turkes can be contacted at emir.turkes@eturkes.com
 ```
 
-### 1. Supplemental Figures
+### 1. Extended Data Figures, Results, and Methods
 
-Several supplemental figures and methodology related to the main manuscript and revised manuscript are contained in PDF files hosted in Google Drive.
-They can be found in the `supplemental` folder in the following link:  
+Several extended data figures, results, and explanations of methodology can be found in additional files hosted in Google Drive.
+They can be found in the `extended-data` folder in the following link:  
 [https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)
 
-### 2. Data and Code Used to Reproduce Manuscript Figures
+### 2. Data and Code Used to Reproduce Manuscript Figures and Results
 
-Reproduction of main figures from the manuscript and figures addressing reviewer comments can be found in the `results` folder of the same Google Drive link.
+Reproduction of figures and results from the manuscript can be found in the `results` folder of the same Google Drive link.
 Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view the figues and the code used to produce them.
 
 ### 3. Further Analysis

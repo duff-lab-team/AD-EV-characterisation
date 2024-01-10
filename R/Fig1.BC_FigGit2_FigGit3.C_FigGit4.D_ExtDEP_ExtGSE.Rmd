@@ -1,5 +1,5 @@
 ---
-title: "Figure 1 BC, Figure S2, Figure S3 C, Figure S4 D, Table S1, Table S2"
+title: "Figure 1 BC, Github Figure 2, Github Figure 3 C, Github Figure S4 D, Extended Data DEP, Extended Data GSE"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
@@ -17,7 +17,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.html"
+    "..", "results", "Fig1.BC_FigGit2_FigGit3.C_FigGit4.D_ExtDEP_ExtGSE.html"
   ))})
 ---
 
@@ -33,7 +33,7 @@ div.main-container {max-width: none; width: 100%;}
 </style>
 
 *This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
-*The purpose of this file is to reproduce results from the associated paper, specifically sections B and C of Figure 1, Supplementary Figure 2, section C of Supplementary Figure S3, and Supplementary Tables 1 and 2.*
+*The purpose of this file is to reproduce results from the associated paper, specifically sections B and C of Figure 1, Github Figure 2, section C of Github Figure S3, and the DEP and GSE sections of Extended Data.*
 
 The table of contents in the top left is clickable and can be used to quickly navigate the document.
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
@@ -192,7 +192,7 @@ unimputed_data <- data # For comparison later, keep an object that won't go thro
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 ```
 
-# Figure S2 A
+# Github Figure 2 A
 
 Plot of the number of uniquely captured proteins per sample.
 
@@ -200,7 +200,7 @@ Plot of the number of uniquely captured proteins per sample.
 plot_numbers(data) + theme(axis.text.x = element_text(size = 7)) + scale_x_discrete(labels = data$nice_names)
 ```
 
-# Figure S2 B
+# Github Figure 2 B
 
 Plot of the distribution of missing values throughout the samples.
 
@@ -210,7 +210,7 @@ plot_missval(data)
 colnames(data) <- data$ID # Some DEP functions are incompatible with the format in `nice_names`, so revert back.
 ```
 
-# Figure S3 C
+# Github Figure 3 C
 
 Missing value proportion to log2 intensity chart, with line drawn at the MNAR cutoff point.
 Only fraction 1 is shown here as a representative example, but the others can be trivially produced by removing chunk options that are suppressing output when re-running this R Markdown.
@@ -789,7 +789,7 @@ ggplot(df, aes(PC1, PC2, color = Fraction)) +
 # ----------------------------------------------------------------------------------------------------------------
 ```
 
-# Table S1 {.tabset}
+# Extended Data DEP {.tabset}
 
 Tabs containing tables of differentially expressed proteins (DEPs) for each fraction group (F1_3, F4_6, and F7_8) compared to all other fraction groups.
 limma was used with default parameters except for multiple testing correction adjustment for all pairwise comparisons using the "global" method.
@@ -870,7 +870,7 @@ datatable_download(F4_6) # Custom version of `DT::datatable`, see top of file un
 datatable_download(F7_8) # Custom version of `DT::datatable`, see top of file under "Define functions" comment.
 ```
 
-# Table S2 {.tabset}
+# Extended Data GSE {.tabset}
 
 Tables containing the same comparisons as Supplementary Table 1 but for gene set enrichment (GSE) of Gene Ontology (GO) terms using the ssGSEA algorithm from GSVA combined with limma.
 ssGSEA was shown to have similar performance to the default GSVA method, but we find it more versatile for having an option to turn off min-max scaling, allowing one to compare GSE across gene sets and not just samples.
@@ -1195,7 +1195,7 @@ datatable_download(F4_6) # Custom version of `DT::datatable`, see top of file un
 datatable_download(F7_8) # Custom version of `DT::datatable`, see top of file under "Define functions" comment.
 ```
 
-# Figure 1C
+# Figure 1 C
 
 A curated heatmap of enriched Gene Ontology (GO) terms selected from the tables above.
 Per-row scaling is applied to accentuate differences between samples with the caveat of losing comparability between gene sets.
@@ -1251,7 +1251,7 @@ draw(
 )
 ```
 
-# Figure S4 D
+# Github Figure 4 D
 
 This figure is a Venn diagram comparing DEPs in the imputed, unimputed, and complete cases pipelines.
 All limma parameters are set the same as the prior DEP analysis.

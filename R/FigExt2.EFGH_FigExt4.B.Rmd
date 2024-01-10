@@ -1,5 +1,5 @@
 ---
-title: "Figure S5 CDEF"
+title: "Extended Data Figure 2 EFGH, Extended Data Figure 4 B"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
@@ -16,8 +16,9 @@ output:
       collapsed: false
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path("..", "results", "FigS5.CDEF.html"))
-  })
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "results", "FigExt2.EFGH_FigExt4.B.html"
+  ))})
 ---
 
 <style type="text/css">
@@ -32,7 +33,7 @@ div.main-container {max-width: none; width: 100%;}
 </style>
 
 *This file is a part of [AD-EV-characterisation](https://github.com/duff-lab-team/AD-EV-characterisation).*  
-*The purpose of this file is to reproduce results from the associated paper, specifically sections C, D, E, and F of Supplementary Figure 5.*
+*The purpose of this file is to reproduce results from the associated paper, specifically sections E, F, G, and H of Extended Data Figure 2 and section B of Extended Data Figure 4.*
 
 The table of contents in the top left is clickable and can be used to quickly navigate the document.
 To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
@@ -90,13 +91,13 @@ colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)] # Specify an order that provides bet
 
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
-file_list <- list.files(file.path(data_dir, "zetaview"))
+file_list <- list.files(file.path(data_dir, "zetaview", "fractions"))
 file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 for (i in seq_along(file_list)) {
 
-  file <- read.delim(file.path(data_dir, "zetaview", file_list[i]), skip = 70) # Skip metadata lines.
+  file <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), skip = 70) # Skip metadata lines.
   if (i == 1) {
     data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
   }
@@ -104,7 +105,7 @@ for (i in seq_along(file_list)) {
   # We need to multiply the concentrations in each sample with the sample's dilution factor to obtain the original
   # concentration and make samples comparable.
   # --------------------------------------------------------------------------------------------------------------
-  dilution <- read.delim(file.path(data_dir, "zetaview", file_list[i]), FALSE, nrows = 1, skip = 24)
+  dilution <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), FALSE, nrows = 1, skip = 24)
   dilution <- dilution$V7
   data[ , i + 1] <- file[1:1200, 3] * dilution # Add original concentration to the data object.
   # --------------------------------------------------------------------------------------------------------------
@@ -132,7 +133,7 @@ data <- data[min(non_zero):max(non_zero), ]
 # ----------------------------------
 ```
 
-# Figure S5 C
+# Extended Data Figure 2 E
 
 This figure compares the number of EVs captured in each fraction.
 A scaling factor based on the amount of tissue used for each donor is applied to correct for minor differences during sample prep.
@@ -192,7 +193,7 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
   scale_fill_manual(values = colour)
 ```
 
-# Figure S5 F
+# Extended Data Figure 2 H
 
 Box and whisker plots comparing the mode of each fraction.
 Among the donors, centre lines indicate the median of modes, lower and upper hinges represent the first and third quartiles, and whiskers extend from the hinges to a maximum of 1.5X the interquartile range.
@@ -201,12 +202,12 @@ Because proper calculation of the mode uses counts of particles at particular si
 ```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
-file_list <- list.files(file.path(data_dir, "zetaview"))
+file_list <- list.files(file.path(data_dir, "zetaview", "fractions"))
 file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 for (i in seq_along(file_list)) {
-  file <- read.delim(file.path(data_dir, "zetaview", file_list[i]), skip = 70) # Skip metadata lines.
+  file <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), skip = 70) # Skip metadata lines.
   if (i == 1) {
     data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
   }
@@ -291,7 +292,7 @@ ggplot(molten_data, aes(Fraction, Diameter)) +
   )
 ```
 
-# Figure S5 E
+# Extended Data Figure 2 G
 
 Smoothed histogram showing for each fraction the relative proportion of EVs at each size.
 Error bars represent at each size the standard deviation in EV proportion among fractions.
@@ -370,7 +371,7 @@ ggplot(molten_data, aes(Size, Proportion, group = Fraction, color = Fraction)) +
   scale_colour_manual(values = colour)
 ```
 
-# Figure S5 D
+# Extended Data Figure 2 F
 
 This figure features binning of particle sizes and bar plots of the percentage of particles from the total per fraction in each of the bins.
 Error bars represent at each fraction and bin the standard deviation in EV percentage among donors.
@@ -445,6 +446,151 @@ ggplot(molten_data_new, aes(size, percentage, fill = Fraction)) +
   scale_fill_manual(values = colour) +
   ylab("Percentage of EVs Per Fraction (%)") +
   xlab("Diameter Range (nm)")
+```
+
+# Extended Data Figure 4 B
+
+Smoothed histogram showing the relative proportion of EVs at each size in the seeded HEK cells.
+Error bars represent at each size the standard deviation in EV proportion.
+
+```{r}
+# The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
+# ------------------------------------------------------------------------------------------------------------
+file_list <- list.files(file.path(data_dir, "zetaview", "HEK"))
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+for (i in seq_along(file_list)) {
+  file <- read.delim(file.path(data_dir, "zetaview", "HEK", file_list[i]), skip = 76) # Skip metadata lines.
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
+  }
+  data[ , i + 1] <- file[1:1200, 2]
+}
+rm(file)
+# ------------------------------------------------------------------------------------------------------------
+
+# Use Zetaview filenames to name data columns.
+# --------------------------------------------
+colnames(data) <- c(
+  "size",
+  paste(
+    sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    unlist(
+      strsplit(sub("^[^_]*_[^_]*_[^_]*[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list), "\\.")
+    )[seq(2, 32, by = 2)],
+    sub("^[^_]*_[^_]*_[^_]*[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    unlist(
+      strsplit(
+        sub(
+          "^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list
+        ),
+        "\\."
+      )
+    )[seq(2, 32, by = 2)],
+    sep = "_"
+  )
+)
+# --------------------------------------------
+
+# Subset to the particle size range.
+# ----------------------------------
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+# ----------------------------------
+
+# Create a dataset where replicates of each seeding status are summed together.
+# -----------------------------------------------------------------------------
+names <- unique(
+  paste(
+    sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])),
+    sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])),
+    sep = "_"
+  )
+)
+summed_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+summed_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[
+    , which(
+        paste(
+          sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data)),
+          sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data)),
+          sep = "_"
+        ) %in% names[i]
+    )
+  ]
+  summed_data[ , i + 1] <- rowSums(data_sub)
+}
+colnames(summed_data) <- c("size", names)
+# -----------------------------------------------------------------------------
+
+# Convert counts into proportion values.
+# --------------------------------------
+summed_data_proportion <- summed_data
+for (i in seq_along(colnames(summed_data_proportion))) {
+  if (i != 1) { # The first column contains sizes not counts.
+    summed_data_proportion[i] <- summed_data_proportion[i] / max(summed_data_proportion[i])
+  }
+}
+# --------------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+data_sub <- summed_data_proportion[1:which(summed_data_proportion$size == 502.5), ] # Values level off at ~500nm.
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Seeds", "Proportion")
+molten_data$Size <- rep(data_sub$size, times = ncol(data_sub) - 1)
+# ---------------------------
+
+# Add the standard deviation.
+# ---------------------------
+sd <- data_summary(molten_data, varname = "Proportion", groupnames = "Size")
+molten_data$SD <- rep(sd$sd, length(unique(molten_data$Seeds)))
+# ---------------------------
+
+# Calculate basic summary statistics.
+# -----------------------------------
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(summed_data) - 1))
+colnames(stats) <- colnames(summed_data[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_sample <- vector("list", ncol(summed_data) - 1)
+for (i in seq_along(counts_per_sample)) {
+  counts_per_sample[[i]] <- rep(summed_data[ , 1], summed_data[ , i + 1])
+  stats[1, i] <- mean(counts_per_sample[[i]])
+  stats[2, i] <- median(counts_per_sample[[i]])
+  stats[3, i] <- as.numeric(names(table(counts_per_sample[[i]]))[
+    table(counts_per_sample[[i]]) == max(table(counts_per_sample[[i]]))
+  ])[1]
+  stats[4:6, i] <- as.numeric(quantile(counts_per_sample[[i]], probs = c(0.1, 0.5, 0.9)))
+}
+# -----------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+molten_data_sub <- molten_data[molten_data[[1]] == names[1], ]
+# ---------------------------
+
+# Create the plot.
+# ----------------
+ggplot(molten_data_sub, aes(Size, Proportion, group = Seeds, color = Seeds)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Proportion - SD, ymax = Proportion + SD), linewidth = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative proportion of EVs per seeding status") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data_sub$Size), by = 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data_sub$Proportion), by = 0.1),
+    limits = c(0, max(molten_data_sub$Proportion))
+  ) +
+  geom_vline(xintercept = c(stats[4, 1], stats[3, 1], stats[6, 1]))
+# ----------------
+```
 ```
 
 # References

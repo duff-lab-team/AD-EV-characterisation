@@ -25,32 +25,32 @@ setwd(dirname(parent.frame(2)$ofile)) # Move to location of this file.
 xfun::Rscript_call(
   rmarkdown::render,
   list(
-    file.path("Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.Rmd"),
-    output_file = file.path("..", "results", "Fig1.BC_FigS2_FigS3.C_FigS4.D_TableS1_TableS2.html"),
+    file.path("Fig1.BC_FigGit2_FigGit3.C_FigGit4.D_ExtDEP_ExtGSE.Rmd"),
+    output_file = file.path("..", "results", "Fig1.BC_FigGit2_FigGit3.C_FigGit4.D_ExtDEP_ExtGSE.html"),
     envir = new.env()
   )
 )
 xfun::Rscript_call(
   rmarkdown::render,
   list(
-    file.path("FigS3.AB_FigS4.ABC.Rmd"),
-    output_file = file.path("..", "results", "FigS3.AB_FigS4.ABC.html"),
+    file.path("FigGit3.AB_FigGit4.ABC.Rmd"),
+    output_file = file.path("..", "results", "FigGit3.AB_FigGit4.ABC.html"),
     envir = new.env()
   )
 )
 xfun::Rscript_call(
   rmarkdown::render,
   list(
-    file.path("FigS5.CDEF.Rmd"),
-    output_file = file.path("..", "results", "FigS5.CDEF.html"),
+    file.path("FigExt2.EFGH_FigExt4.B.Rmd"),
+    output_file = file.path("..", "results", "FigExt2.EFGH_FigExt4.B.html"),
     envir = new.env()
   )
 )
 xfun::Rscript_call(
   rmarkdown::render,
   list(
-    file.path("FigR2_FigR3_FigR4.AB.Rmd"),
-    output_file = file.path("..", "results", "FigR2_FigR3_FigR4.AB.html"),
+    file.path("FigExt1_FigExt3.Rmd"),
+    output_file = file.path("..", "results", "FigExt1_FigExt3.html"),
     envir = new.env()
   )
 )

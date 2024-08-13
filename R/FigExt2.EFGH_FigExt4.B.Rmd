@@ -444,7 +444,7 @@ ggplot(molten_data_new, aes(size.x, percentage.x, fill = Fraction, col = Fractio
     aes(ymin = percentage.x, ymax = percentage.x + sd), size = 0.3, position = position_dodge(), color = "darkgrey"
   ) +
   geom_point(
-    aes(y = percentage.y, col = Fraction), size = 0.3, position = position_dodge(1)
+    aes(y = percentage.y, col = Fraction), size = 0.3, position = position_dodge(width = 0.9)
   ) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data_new$percentage.x), by = 2)) +

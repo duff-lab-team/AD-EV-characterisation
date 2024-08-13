@@ -1121,19 +1121,19 @@ results <- results[order(results$F.p.value.adj), ]
 
 # Distinguish gene sets from different subontologies.
 # ---------------------------------------------------
-sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:BP.ENSG.gmt"))
+sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO.BP.ENSG.gmt"))
 GO_BP <- c()
 for (i in seq(length(sub_ontology@.Data))) {
   GO_BP <- append(GO_BP, sub_ontology[[i]]@shortDescription)
 }
 
-sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:MF.ENSG.gmt"))
+sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO.MF.ENSG.gmt"))
 GO_MF <- c()
 for (i in seq(length(sub_ontology@.Data))) {
   GO_MF <- append(GO_MF, sub_ontology[[i]]@shortDescription)
 }
 
-sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:CC.ENSG.gmt"))
+sub_ontology <- getGmt(file.path(data_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO.CC.ENSG.gmt"))
 GO_CC <- c()
 for (i in seq(length(sub_ontology@.Data))) {
   GO_CC <- append(GO_CC, sub_ontology[[i]]@shortDescription)

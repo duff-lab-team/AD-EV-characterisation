@@ -45,6 +45,7 @@ RUN apt-get update \
         -e "BiocManager::install('GSEABase')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('biomaRt')" \
+	-e "BiocManager::install('glmGamPoi')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \

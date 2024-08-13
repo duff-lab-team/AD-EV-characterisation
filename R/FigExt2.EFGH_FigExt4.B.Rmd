@@ -91,13 +91,13 @@ colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)] # Specify an order that provides bet
 
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
-file_list <- list.files(file.path(data_dir, "zetaview", "fractions"))
+file_list <- list.files(file.path(data_dir, "zetaview", "Human Brain EV Fractions"))
 file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 for (i in seq_along(file_list)) {
 
-  file <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), skip = 70) # Skip metadata lines.
+  file <- read.delim(file.path(data_dir, "zetaview", "Human Brain EV Fractions", file_list[i]), skip = 70) # Skip metadata lines.
   if (i == 1) {
     data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
   }
@@ -105,7 +105,7 @@ for (i in seq_along(file_list)) {
   # We need to multiply the concentrations in each sample with the sample's dilution factor to obtain the original
   # concentration and make samples comparable.
   # --------------------------------------------------------------------------------------------------------------
-  dilution <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), FALSE, nrows = 1, skip = 24)
+  dilution <- read.delim(file.path(data_dir, "zetaview", "Human Brain EV Fractions", file_list[i]), FALSE, nrows = 1, skip = 24)
   dilution <- dilution$V7
   data[ , i + 1] <- file[1:1200, 3] * dilution # Add original concentration to the data object.
   # --------------------------------------------------------------------------------------------------------------
@@ -202,12 +202,12 @@ Because proper calculation of the mode uses counts of particles at particular si
 ```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
-file_list <- list.files(file.path(data_dir, "zetaview", "fractions"))
+file_list <- list.files(file.path(data_dir, "zetaview", "Human Brain EV Fractions"))
 file_list <- file_list[-grep("10K", x = file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 for (i in seq_along(file_list)) {
-  file <- read.delim(file.path(data_dir, "zetaview", "fractions", file_list[i]), skip = 70) # Skip metadata lines.
+  file <- read.delim(file.path(data_dir, "zetaview", "Human Brain EV Fractions", file_list[i]), skip = 70) # Skip metadata lines.
   if (i == 1) {
     data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
   }
@@ -456,11 +456,11 @@ Error bars represent at each size the standard deviation in EV proportion.
 ```{r}
 # The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
 # ------------------------------------------------------------------------------------------------------------
-file_list <- list.files(file.path(data_dir, "zetaview", "HEK"))
+file_list <- list.files(file.path(data_dir, "zetaview", "HEK EV Fractions"))
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 for (i in seq_along(file_list)) {
-  file <- read.delim(file.path(data_dir, "zetaview", "HEK", file_list[i]), skip = 76) # Skip metadata lines.
+  file <- read.delim(file.path(data_dir, "zetaview", "HEK EV Fractions", file_list[i]), skip = 76) # Skip metadata lines.
   if (i == 1) {
     data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
   }

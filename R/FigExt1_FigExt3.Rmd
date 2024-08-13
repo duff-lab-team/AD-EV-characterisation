@@ -103,8 +103,8 @@ if (file.exists(rds)) {
   data <- readRDS(rds)
 } else {
 
-  data <- read.csv(file.path(assets_dir, "allen-human-cortical-tx", "exon.csv"))
-  meta <- read.csv(file.path(assets_dir, "allen-human-cortical-tx", "metadata.csv"))
+  data <- read.csv(file.path(data_dir, "allen-human-cortical-tx", "exon.csv"))
+  meta <- read.csv(file.path(data_dir, "allen-human-cortical-tx", "metadata.csv"))
 
   rownames(meta) <- meta$exp_component_name
   meta$exp_component_name <- NULL

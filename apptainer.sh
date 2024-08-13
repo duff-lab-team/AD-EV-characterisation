@@ -22,7 +22,7 @@
 # Shell script for building an Apptainer image from Docker Hub and running it
 # See README of this project for further details
 
-apptainer pull ad-ev-characterisation.sif docker://dufflab/ad-ev-characterisation:R4.2.1v7
+apptainer pull ad-ev-characterisation.sif docker://dufflab/ad-ev-characterisation:R4.2.1v8
 
 if [ "$1" = "all" ]; then
     apptainer exec \

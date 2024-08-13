@@ -66,7 +66,7 @@ This section covers necessary but non-directly relevant code for generating the 
 
 # Load required packages, suppressing startup messages.
 # -----------------------------------------------------
-packages <- c("conflicted", "khroma", "reshape2", "plyr", "ggplot2", "ggbeeswarm")
+packages <- c("conflicted", "khroma", "reshape2", "plyr", "ggplot2", "ggbeeswarm", "dplyr")
 invisible(suppressPackageStartupMessages(lapply(packages, FUN = library, character.only = TRUE)))
 # -----------------------------------------------------
 
@@ -421,6 +421,7 @@ for (i in seq_along(unique(molten_data$donor_fraction))) {
 colnames(molten_data_new) <- c("size", "percentage", "donor_fraction")
 molten_data_new$fraction <- sub(".*_", replacement = "", x = molten_data_new$donor_fraction)
 molten_data_new$fraction_size <- paste(molten_data_new$size, molten_data_new$fraction, sep = "_")
+molten_data_orig <- molten_data_new
 # --------------
 
 # Add standard deviation while ordering data by particle size.
@@ -432,18 +433,23 @@ molten_data_new$size <- factor( # Factor levels are not in correct order and bin
   levels = unique(molten_data_new$size)[c(1, 10, 2:9, 11:16)]
 )
 molten_data_new$Fraction <- sub(".*_", replacement = "", x = molten_data_new$fraction_size)
+molten_data_new <- left_join(molten_data_new, molten_data_orig, "fraction_size")
 # ------------------------------------------------------------
 ```
 
 ```{r}
-ggplot(molten_data_new, aes(size, percentage, fill = Fraction)) +
-  geom_bar(stat = "identity", position = "dodge") +
+ggplot(molten_data_new, aes(size.x, percentage.x, fill = Fraction, col = Fraction)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.1, size = 0.01) +
   geom_errorbar(
-    aes(ymin = percentage, ymax = percentage + sd), size = 0.3, position = position_dodge(), color = "darkgrey"
+    aes(ymin = percentage.x, ymax = percentage.x + sd), size = 0.3, position = position_dodge(), color = "darkgrey"
+  ) +
+  geom_point(
+    aes(y = percentage.y, col = Fraction), size = 0.3, position = position_dodge(1)
   ) +
   theme_light() +
-  scale_y_continuous(breaks = seq(0, max(molten_data_new$percentage), by = 2)) +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$percentage.x), by = 2)) +
   scale_fill_manual(values = colour) +
+  scale_colour_manual(values = colour) +
   ylab("Percentage of EVs Per Fraction (%)") +
   xlab("Diameter Range (nm)")
 ```

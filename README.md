@@ -25,9 +25,9 @@ Emir Turkes can be contacted at emir.turkes@eturkes.com
 
 ### 1. Extended Data Figures, Results, and Methods
 
-Several extended data figures, results, and explanations of methodology can be found in additional files hosted in Google Drive.
-They can be found in the `extended-data` folder in the following link:  
-[https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing](https://drive.google.com/drive/folders/1WuZHpDzmFHFFVp1B6tU51ZQbQyBOY_jT?usp=sharing)
+Several supplemental data figures, results, and explanations of methodology can be found in additional files hosted in Google Drive.
+They can be found in the `supplemental-data` folder in the following link:  
+*TODO: Add new link*
 
 ### 2. Data and Code Used to Reproduce Manuscript Figures and Results
 
@@ -37,7 +37,7 @@ Inside the folder are HTML files that can be opened in any web browser; they wil
 ### 3. Further Analysis
 
 Beyond here is information for reproducing or performing your own analysis.
-As in the Quick Start, visit the Google Drive link, this time downloading both `data` and `results`.
+As in the Quick Start, visit the Google Drive link, this time downloading both `raw-data` and `results`.
 These should both be placed in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
 Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
 These may have to be recreated on non-Unix systems such as Windows.

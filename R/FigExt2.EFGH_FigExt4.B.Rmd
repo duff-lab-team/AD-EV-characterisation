@@ -597,7 +597,6 @@ ggplot(molten_data_sub, aes(Size, Proportion, group = Seeds, color = Seeds)) +
   geom_vline(xintercept = c(stats[4, 1], stats[3, 1], stats[6, 1]))
 # ----------------
 ```
-```
 
 # References
 

@@ -25,19 +25,19 @@ Emir Turkes can be contacted at emir.turkes@eturkes.com
 
 ### 1. Extended Data Figures, Results, and Methods
 
-Several supplemental data figures, results, and explanations of methodology can be found in additional files hosted in Google Drive.
+Several supplemental data figures, results, and explanations of methodology can be found in additional files hosted on Dropbox.
 They can be found in the `supplemental-data` folder in the following link:  
-*TODO: Add new link*
+https://www.dropbox.com/scl/fo/5ojghapoyaaua8q4oqmmi/ACat2UowmxcQjYl2Y8XMHAw?rlkey=06ez1w18q7isv45jy0pg9uygz&st=fa7tdhmp&dl=0
 
 ### 2. Data and Code Used to Reproduce Manuscript Figures and Results
 
-Reproduction of figures and results from the manuscript can be found in the `results` folder of the same Google Drive link.
+Reproduction of figures and results from the manuscript can be found in the `results` folder of the same Dropbox link.
 Inside the folder are HTML files that can be opened in any web browser; they will have all information neccessary to view the figues and the code used to produce them.
 
 ### 3. Further Analysis
 
 Beyond here is information for reproducing or performing your own analysis.
-As in the Quick Start, visit the Google Drive link, this time downloading both `raw-data` and `results`.
+As in the Quick Start, visit the Dropbox link, this time downloading both `raw-data` and `results`.
 These should both be placed in a directory called `storage` and placed in the top-level of this project after downloading it from Github.
 Note that the project structure currently assumes a Unix environment as there are the top-level symbolic links `data` and `results` pointing to those respective directories within `storage`.
 These may have to be recreated on non-Unix systems such as Windows.
